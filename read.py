@@ -1,3 +1,8 @@
+# call with
+#
+# python3.7 read.py --c Spain Italy Germany Greece UK --f ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv
+#
+
 import sys
 import csv
 import argparse
@@ -7,7 +12,7 @@ def printCountry(country):
         print(f'{country},{casesReported[country]},{deathsReported[country]}',
               end=",")
     else:
-        print(f'{country},,', end="")
+        print(f'{country},,,', end="")
 
 
 
@@ -34,7 +39,7 @@ deathsReported = dict()
 
 #print(sys.argv)
 for filename in files:
-    date = filename[-14:-4]
+    date = filename[-14:-9] # keep only the MM-DD from the file name
     print(f'{date}', end=",")
     with open(filename) as csvfile:
         for country in countries:
@@ -55,6 +60,8 @@ for filename in files:
                     #     dateIndex = colindex
                     if "Country" in col:
                         countryIndex = colindex
+                    if "Province" in col:
+                        provinceIndex = colindex
                     if "Confirmed" in col:
                         confirmedIndex = colindex
                     if "Deaths" in col:
@@ -65,7 +72,18 @@ for filename in files:
                 continue
             # print(row)
 
-            country = row[countryIndex]
+            # handle strange case of UK
+            if row[provinceIndex] == 'United Kingdom':
+                row[provinceIndex] = 'UK'
+
+            if row[countryIndex] == 'United Kingdom':
+                row[countryIndex] = 'UK'
+
+            if row[provinceIndex] == '':
+                country = row[countryIndex]
+            else:
+                country = row[provinceIndex]
+
             if country in countries:
                 countryReported[country] = True
                 casesReported[country] = row[confirmedIndex]
