@@ -1,18 +1,46 @@
 # call with
 #
-# python3.7 read.py --c Spain Italy Germany Greece UK --f ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv
+# python3.5 read.py --c Spain Italy Germany Greece UK --f ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv
 #
 
 import sys
 import csv
 import argparse
+import matplotlib.pyplot as plt
+
+
+countryReported = dict()
+casesReported = dict()
+deathsReported = dict()
+population = dict()
+
+xValues = []
+yValues = dict()
+
+xTicks = []
+greece = []
+population['Greece'] = 11
+population['Italy'] = 61
+population['UK'] = 66
+population['Germany'] = 83
+population['Spain'] = 46
 
 def printCountry(country):
+
     if countryReported[country]:
-        print(f'{country},{casesReported[country]},{deathsReported[country]}',
-              end=",")
+        yValues[country].append( int(casesReported[country]) / population[country])
     else:
-        print(f'{country},,,', end="")
+        yValues[country].append(0)
+
+    if countryReported[country]:
+    #     print(f'{country},{casesReported[country]},{deathsReported[country]}',
+    #           end=",")
+    # else:
+    #     print(f'{country},,,', end="")
+
+        print('{country},{casesReported},{deathsReported}'.format(country=country, casesReported=casesReported[country],deathsReported=deathsReported[country]), end=",")
+    else:
+        print('{country},,,'.format(country=country), end="")
 
 
 
@@ -33,14 +61,21 @@ countries.sort()
 files = args.f
 # print(files)
 
-countryReported = dict()
-casesReported = dict()
-deathsReported = dict()
 
+for country in countries:
+    yValues[country] = []
+
+
+
+xValue = 0
 #print(sys.argv)
 for filename in files:
     date = filename[-14:-9] # keep only the MM-DD from the file name
-    print(f'{date}', end=",")
+    xValues.append(xValue)
+    xTicks.append(date)
+    xValue += 1
+
+    print('{date}'.format(date=date), end=",")
     with open(filename) as csvfile:
         for country in countries:
             # print(c)
@@ -95,5 +130,20 @@ for filename in files:
             printCountry(country)
 
     print()
+    print(greece)
+
+# plt.plot([73,73,89,99,99,190,228,331,387,418,418,495,530,624,695,743,821,892])
+
+plt.xlabel('Date')
+plt.ylabel('Reported cases per mil')
+plt.title('Title')
+plt.xticks(xValues, xTicks)
+plt.plot(xValues, yValues['Greece'], 'r--')
+plt.plot(xValues, yValues['UK'], 'g--')
+plt.plot(xValues, yValues['Germany'], 'b--')
+plt.plot(xValues, yValues['Italy'], 'g^')
+plt.plot(xValues, yValues['Spain'], 'b^')
+plt.show()    
+
 
 
