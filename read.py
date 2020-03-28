@@ -7,6 +7,7 @@ import sys
 import csv
 import argparse
 import matplotlib.pyplot as plt
+import code
 
 label = ['Cases per mil', 'Deaths per mil', 'Recovered per mil']
 maxDim = len(label)
@@ -43,6 +44,9 @@ def plotGraph(daysBefore):
     for i in range(maxDim):
         plt.subplot(maxDim, 1, i+1)
 
+        if logY:
+            plt.yscale('log')
+
         plt.xlabel('Date')
         plt.ylabel(label[i])
 
@@ -60,6 +64,7 @@ def plotGraph(daysBefore):
         for country in countries:
             plt.plot(xValues, yValues[i][country], 'o-')
 
+
     plt.legend(countries, loc = 'upper left')
     plt.show()
 
@@ -74,6 +79,7 @@ CLI.add_argument("--c",
 CLI.add_argument("--f", nargs = "*", type=str, default=[])
 CLI.add_argument("--days", nargs = "?", type=int, default=0)
 CLI.add_argument("--maxY", nargs = "?", type=int, default=0)
+CLI.add_argument("--logY", nargs = "?", type=bool, default=False)
 args= CLI.parse_args()
 
 countries= args.c
@@ -81,7 +87,8 @@ countries.sort()
 
 daysBefore= int(args.days)
 print(daysBefore)
-maxY= args.maxY
+maxY = args.maxY
+logY = args.logY
 
 # print(countries)
 files= args.f
@@ -191,3 +198,5 @@ for filename in files:
     print()  # end the csv
 
 plotGraph(daysBefore)
+
+# code.interact(local=locals())
