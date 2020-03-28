@@ -30,7 +30,7 @@ def processCountry(country):
         if countryReported[country]:
             if yValue[i] != '':
                 yValues[i][country].append(
-                    int(yValue[i]) / population[country])
+                    int(yValue[i]))
             else:
                 # use previous value
                 lastValue=yValues[i][country][-1]
@@ -62,11 +62,27 @@ def plotGraph(daysBefore):
             plt.ylim([0, maxY])
 
         for country in countries:
-            plt.plot(xValues, yValues[i][country], 'o-')
+            ys = list(map(lambda y: y/population[country], yValues[i][country]))
+            plt.plot(xValues, ys, 'o-')
+                # map(lambda y: y/population[country], yValues[i][country]), 'o-')
+                
 
 
     plt.legend(countries, loc = 'upper left')
     plt.show()
+
+
+def generateCSV():
+    index = 0
+    for date in xTicks:
+        print(date, end=',')
+        for country in countries:
+            print(country, end=',')
+            for i in range(maxDim):
+                print(yValues[i][country][index], end=',')
+        print()
+        index += 1
+
 
 #
 # PROGRAM
@@ -86,7 +102,6 @@ countries= args.c
 countries.sort()
 
 daysBefore= int(args.days)
-print(daysBefore)
 maxY = args.maxY
 logY = args.logY
 
@@ -128,75 +143,66 @@ for i in range(maxDim):
 
 xTicks= []
 
+def readFiles():
+    xValue= 0
+    for filename in files:
+        date= filename[-14:-9]  # keep only the MM-DD from the file name
+        xValues.append(xValue)
+        xTicks.append(date)
+        xValue += 1
 
-xValue= 0
-# print(sys.argv)
-for filename in files:
-    date= filename[-14:-9]  # keep only the MM-DD from the file name
-    xValues.append(xValue)
-    xTicks.append(date)
-    xValue += 1
+        with open(filename) as csvfile:
+            for country in countries:
+                countryReported[country] = False
 
-    print('{date}'.format(date=date), end = ",")
-    with open(filename) as csvfile:
-        for country in countries:
-            # print(c)
-            countryReported[country]= False
+            spamreader= csv.reader(csvfile)
 
-        # print(countryReported)
+            header= True
+            for row in spamreader:
+                if header:
+                    colindex= 0
+                    for col in row:
+                        # if col in ['Last_Update', 'Last Update']:
+                        #     dateIndex = colindex
+                        if "Country" in col:
+                            countryIndex= colindex
+                        if "Province" in col:
+                            provinceIndex= colindex
+                        if "Confirmed" in col:
+                            confirmedIndex= colindex
+                        if "Deaths" in col:
+                            deathsIndex= colindex
+                        if "Recovered" in col:
+                            recoveredIndex= colindex
 
-        spamreader= csv.reader(csvfile)
+                        colindex += 1
+                    header= False
+                    continue
 
-        header= True
-        for row in spamreader:
-            if header:
-                # print(row)
-                colindex= 0
-                for col in row:
-                    # if col in ['Last_Update', 'Last Update']:
-                    #     dateIndex = colindex
-                    if "Country" in col:
-                        countryIndex= colindex
-                    if "Province" in col:
-                        provinceIndex= colindex
-                    if "Confirmed" in col:
-                        confirmedIndex= colindex
-                    if "Deaths" in col:
-                        deathsIndex= colindex
-                    if "Recovered" in col:
-                        recoveredIndex= colindex
+                # handle strange case of UK
+                if row[provinceIndex] == 'United Kingdom':
+                    row[provinceIndex]= 'UK'
 
-                    colindex += 1
-                header= False
-                continue
-            # print(row)
+                if row[countryIndex] == 'United Kingdom':
+                    row[countryIndex]= 'UK'
 
-            # handle strange case of UK
-            if row[provinceIndex] == 'United Kingdom':
-                row[provinceIndex]= 'UK'
+                if row[provinceIndex] == '':
+                    country= row[countryIndex]
+                else:
+                    country= row[provinceIndex]
 
-            if row[countryIndex] == 'United Kingdom':
-                row[countryIndex]= 'UK'
+                if country in countries:
+                    countryReported[country]= True
+                    casesReported[country]= row[confirmedIndex]
+                    deathsReported[country]= row[deathsIndex]
+                    recoveredReported[country]= row[recoveredIndex]
 
-            if row[provinceIndex] == '':
-                country= row[countryIndex]
-            else:
-                country= row[provinceIndex]
+            for country in countries:
+                processCountry(country)
 
-            if country in countries:
-                countryReported[country]= True
-                casesReported[country]= row[confirmedIndex]
-                deathsReported[country]= row[deathsIndex]
-                recoveredReported[country]= row[recoveredIndex]
 
-            # rowindex += 1
-
-        for country in countries:
-            printCountry(country)
-            processCountry(country)
-
-    print()  # end the csv
-
+readFiles()
+generateCSV()
 plotGraph(daysBefore)
 
 # code.interact(local=locals())
