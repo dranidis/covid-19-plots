@@ -9,17 +9,6 @@ import argparse
 import matplotlib.pyplot as plt
 import code
 
-label = ['Cases per mil', 'Deaths per mil', 'Recovered per mil']
-maxDim = len(label)
-
-
-def printCountry(country):
-    if countryReported[country]:
-        print('{country},{casesReported},{deathsReported},{recoveredReported}'.format(country=country,
-            casesReported=casesReported[country], deathsReported=deathsReported[country], recoveredReported=recoveredReported[country]), end = ",")
-    else:
-        print('{country},,,,'.format(country=country), end = "")
-
 
 def processCountry(country):
     if countryReported[country]:
@@ -36,7 +25,10 @@ def processCountry(country):
                 lastValue=yValues[i][country][-1]
                 yValues[i][country].append(lastValue)
         else:
-            yValues[i][country].append(0)
+            newValue = 0
+            if len(yValues[i][country]) > 0:
+                newValue = yValues[i][country][-1]
+            yValues[i][country].append(newValue)
 
 
 def plotGraph(daysBefore):
@@ -55,93 +47,18 @@ def plotGraph(daysBefore):
 
         maxX=len(xValues)
         if daysBefore != 0:
-            # daysBefore = len(xValues)
             minX=maxX - daysBefore  # 30 days before
             plt.xlim([minX, maxX])
-        if maxY != 0:
-            plt.ylim([0, maxY])
+        if maxY[i] != 0:
+            plt.ylim([0, maxY[i]])
 
         for country in countries:
             ys = list(map(lambda y: y/population[country], yValues[i][country]))
             plt.plot(xValues, ys, 'o-')
-                # map(lambda y: y/population[country], yValues[i][country]), 'o-')
-                
-
 
     plt.legend(countries, loc = 'upper left')
     plt.show()
 
-
-def generateCSV():
-    index = 0
-    for date in xTicks:
-        print(date, end=',')
-        for country in countries:
-            print(country, end=',')
-            for i in range(maxDim):
-                print(yValues[i][country][index], end=',')
-        print()
-        index += 1
-
-
-#
-# PROGRAM
-#
-CLI=argparse.ArgumentParser()
-CLI.add_argument("--c",
-                 nargs = "*",
-                 type = str,
-                 default = ['Italy', 'Spain', 'Greece'])
-CLI.add_argument("--f", nargs = "*", type=str, default=[])
-CLI.add_argument("--days", nargs = "?", type=int, default=0)
-CLI.add_argument("--maxY", nargs = "?", type=int, default=0)
-CLI.add_argument("--logY", nargs = "?", type=bool, default=False)
-args= CLI.parse_args()
-
-countries= args.c
-countries.sort()
-
-daysBefore= int(args.days)
-maxY = args.maxY
-logY = args.logY
-
-# print(countries)
-files= args.f
-# print(files)
-
-#
-# Initialize countries
-#
-countryReported= dict()
-casesReported= dict()
-deathsReported= dict()
-recoveredReported= dict()
-population= dict()
-population['Greece']= 11
-population['Italy']= 61
-population['UK']= 66
-population['Germany']= 83
-population['Spain']= 46
-population['Turkey']= 80
-population['France']= 67
-population['Sweden']= 10
-population['Netherlands']= 17
-population['Austria']= 9
-population['Belgium']= 11
-population['Portugal']= 11
-
-
-#
-# for plotting
-#
-xValues= []
-yValues= [dict(), dict(), dict()]
-for i in range(maxDim):
-    # yValues[i] = dict()
-    for country in countries:
-        yValues[i][country]= []
-
-xTicks= []
 
 def readFiles():
     xValue= 0
@@ -201,8 +118,98 @@ def readFiles():
                 processCountry(country)
 
 
+
+def generateCSV():
+    index = 0
+    for date in xTicks:
+        print(date, end=',')
+        for country in countries:
+            print(country, end=',')
+            for i in range(maxDim):
+                print(yValues[i][country][index], end=',')
+        print()
+        index += 1
+
+
+#
+# PROGRAM
+#
+
+label = ['Cases per mil', 'Deaths per mil', 'Recovered per mil']
+maxDim = len(label)
+
+# Initialize countries
+#
+allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
+population= dict()
+population['Greece']= 11
+population['Italy']= 61
+population['UK']= 66
+population['Germany']= 83
+population['Spain']= 46
+population['Turkey']= 80
+population['France']= 67
+population['Sweden']= 10
+population['Netherlands']= 17
+population['Austria']= 9
+population['Belgium']= 11
+population['Portugal']= 11
+population['Switzerland']=8.5
+
+#
+CLI=argparse.ArgumentParser()
+CLI.add_argument("--c",
+                 nargs = "*",
+                 type = str,
+                 default = allCountries)
+CLI.add_argument("--f", nargs = "*", type=str, default=[])
+CLI.add_argument("--days", nargs = "?", type=int, default=0)
+CLI.add_argument("--maxCases", nargs = "?", type=int, default=0)
+CLI.add_argument("--maxDeaths", nargs = "?", type=int, default=0)
+CLI.add_argument("--maxRec", nargs = "?", type=int, default=0)
+CLI.add_argument("--logY", nargs = "?", type=bool, default=False)
+CLI.add_argument("--i", nargs = "?", type=bool, default=False)
+args= CLI.parse_args()
+
+countries= args.c
+countries.sort()
+daysBefore= int(args.days)
+maxY= [args.maxCases, args.maxDeaths, args.maxRec]
+logY = args.logY
+interactiveMode = args.i
+files= args.f
+
+#
+# Initialize data collections for reading from file
+#
+countryReported= dict()
+casesReported= dict()
+deathsReported= dict()
+recoveredReported= dict()
+
+
+#
+# for plotting
+#
+xValues= []
+yValues= [dict(), dict(), dict()]
+for i in range(maxDim):
+    # yValues[i] = dict()
+    for country in countries:
+        yValues[i][country]= []
+
+xTicks= []
+
+
 readFiles()
-generateCSV()
+# generateCSV()
 plotGraph(daysBefore)
 
-# code.interact(local=locals())
+if interactiveMode:
+    code.interact(local=locals())
+
+# total = dict()
+# for country in countries:
+#     total[country] = []
+#     for x in xValues:
+#         total[country].append(yValues[0][country][x] + yValues[1][country][x]  + yValues[2][country][x] )
