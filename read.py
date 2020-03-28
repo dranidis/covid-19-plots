@@ -8,7 +8,8 @@ import csv
 import argparse
 import matplotlib.pyplot as plt
 
-
+maxDim = 2
+label = ['Cases per mil', 'Deaths per mil']
 
 def printCountry(country):
     if countryReported[country]:
@@ -17,26 +18,44 @@ def printCountry(country):
     else:
         print('{country},,,'.format(country=country), end="")
 
+
 def processCountry(country):
     if countryReported[country]:
-        yValue = deathsReported[country]
-        if yValue != '':
-            yValues[country].append(int(yValue) / population[country])
+        yValue = [casesReported[country], deathsReported[country]]
+
+    for i in range(maxDim):
+        if countryReported[country]:
+            if yValue[i] != '':
+                yValues[i][country].append(int(yValue[i]) / population[country])
+            else:
+                # use previous value
+                lastValue = yValues[i][country][-1]
+                yValues[i][country].append(lastValue)
         else:
-            # use previous value
-            lastValue = yValues[country][-1]
-            yValues[country].append(lastValue)
-    else:
-        yValues[country].append(0)
+            yValues[i][country].append(0)
 
-def plotGraph():
-    plt.xlabel('Date')
-    plt.ylabel('Reported cases per mil')
-    plt.title('Title')
-    plt.xticks(xValues, xTicks, rotation='vertical')
 
-    for country in countries:
-        plt.plot(xValues, yValues[country])
+def plotGraph(daysBefore):
+
+    for i in range(maxDim):
+        plt.subplot(2, 1, i+1)
+
+        plt.xlabel('Date')
+        plt.ylabel(label[i])
+
+        # plt.title('Title')
+        plt.xticks(xValues, xTicks, rotation='vertical')
+
+        maxX = len(xValues)
+        if daysBefore != 0:
+            # daysBefore = len(xValues)
+            minX = maxX - daysBefore # 30 days before
+            plt.xlim([minX, maxX])
+        if maxY != 0:
+            plt.ylim([0, maxY])
+
+        for country in countries:
+            plt.plot(xValues, yValues[i][country], 'o-')
 
     plt.legend(countries, loc='upper left')
     plt.show()
@@ -50,10 +69,16 @@ CLI.add_argument("--c",
                  type=str,
                  default=['Italy', 'Spain', 'Greece'])
 CLI.add_argument("--f", nargs="*", type=str, default=[])
+CLI.add_argument("--days", nargs="?", type=int, default=0)
+CLI.add_argument("--maxY", nargs="?", type=int, default=0)
 args = CLI.parse_args()
 
 countries = args.c
 countries.sort()
+
+daysBefore = int(args.days)
+print(daysBefore)
+maxY = args.maxY
 
 # print(countries)
 files = args.f
@@ -73,20 +98,22 @@ population['Germany'] = 83
 population['Spain'] = 46
 population['Turkey'] = 80
 population['France'] = 67
+population['Sweden'] = 10
+population['Netherlands'] = 17
+population['Austria'] = 9
 
 
 #
 # for plotting
 #
 xValues = []
-yValues = dict()
+yValues = [dict(), dict()]
+for i in range(maxDim):
+    # yValues[i] = dict()
+    for country in countries:
+        yValues[i][country] = []
 
 xTicks = []
-
-for country in countries:
-    yValues[country] = []
-
-
 
 
 xValue = 0
@@ -152,9 +179,7 @@ for filename in files:
             printCountry(country)
             processCountry(country)
 
-    print() # end the csv
+    print()  # end the csv
 
-plotGraph()    
-
-
+plotGraph(daysBefore)
 
