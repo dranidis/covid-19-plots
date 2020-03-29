@@ -28,21 +28,16 @@ def processCountry(country):
     for i in range(maxDim):
         if yValue[i] != 0:
             yValues[i][country].append(yValue[i])
+        elif len(yValues[i][country]) > 0:
+            # use previous value
+            lastValue = yValues[i][country][-1]
+            yValues[i][country].append(lastValue)
         else:
-            if len(yValues[i][country]) > 0:
-                # use previous value
-                lastValue = yValues[i][country][-1]
-                yValues[i][country].append(lastValue)
-            else:
-                yValues[i][country].append(0)
+            yValues[i][country].append(0)
 
 
-def plotGraph(daysBefore):
-    numOfPlots = 0
-    for i in range(maxDim):
-        if skip[i]:
-            continue
-        numOfPlots += 1
+def plotGraph(daysBefore = 0):
+    numOfPlots = len([s for s in skip if not s])
 
     plotNr = 0
     for i in range(maxDim):
@@ -60,9 +55,9 @@ def plotGraph(daysBefore):
         plotLabel = label[i]
 
         if perMillion:
-            plotLabel += 'per million'
+            plotLabel += ' per million'
 
-        plt.ylabel(label[i])
+        plt.ylabel(plotLabel)
 
         # plt.title('Title')
         plt.xticks(xValues, xTicks, rotation='vertical')
@@ -82,7 +77,11 @@ def plotGraph(daysBefore):
                 ys = yValues[i][country]
             plt.plot(xValues, ys, 'o-')
 
-    plt.legend(countries, loc='upper left')
+    if len(countries) > 5:
+        plt.legend(countries, loc='upper left', fontsize='xx-small', ncol=2)
+    else:
+        plt.legend(countries, loc='upper left', fontsize='small', ncol=1)
+
     plt.show()
 
 
@@ -107,15 +106,15 @@ def readFiles():
                     for col in row:
                         # if col in ['Last_Update', 'Last Update']:
                         #     dateIndex = colindex
-                        if "Country" in col:
+                        if 'Country' in col:
                             countryIndex = colindex
-                        if "Province" in col:
+                        if 'Province' in col:
                             provinceIndex = colindex
-                        if "Confirmed" in col:
+                        if 'Confirmed' in col:
                             confirmedIndex = colindex
-                        if "Deaths" in col:
+                        if 'Deaths' in col:
                             deathsIndex = colindex
-                        if "Recovered" in col:
+                        if 'Recovered' in col:
                             recoveredIndex = colindex
 
                         colindex += 1
@@ -192,8 +191,9 @@ maxDim = len(label)
 # Initialize countries
 #
 # allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
-allCountries = ['Ireland', 'Denmark', 'Norway', 'US', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
+allCountries = ['Japan', 'Ireland', 'Denmark', 'Norway', 'US', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
                 'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal', 'Switzerland']
+
 population = dict()
 population['US'] = 372
 population['Ireland'] = 5
@@ -214,34 +214,39 @@ population['Austria'] = 9
 population['Belgium'] = 11
 population['Portugal'] = 11
 population['Switzerland'] = 8.5
+population['Japan'] = 127
 
 #
-CLI = argparse.ArgumentParser()
-CLI.add_argument("--c",
-                 nargs="*",
+CLI = argparse.ArgumentParser(description='Plot graphs for the COVID-19')
+CLI.add_argument('-c', '--country',
+                 nargs='*',
                  type=str,
                  default=allCountries)
-CLI.add_argument("--f", nargs="*", type=str, default=[])
-CLI.add_argument("--days", nargs="?", type=int, default=0)
-CLI.add_argument("--maxCases", nargs="?", type=int, default=0)
-CLI.add_argument("--maxDeaths", nargs="?", type=int, default=0)
-CLI.add_argument("--maxRec", nargs="?", type=int, default=0)
-CLI.add_argument("--maxActive", nargs="?", type=int, default=0)
-CLI.add_argument("--logY", nargs="?", type=bool, default=False)
-CLI.add_argument("--i", nargs="?", type=bool, default=False)
-CLI.add_argument("--csv", nargs="?", type=bool, default=False)
-CLI.add_argument("--mil", nargs="?", type=bool, default=False)
+CLI.add_argument('files', nargs='+', type=str)
+CLI.add_argument('-d', '--days', nargs='?', type=int, default=0, help='number of days to plot before today. By default plots start from the beginning of data collection.')
+CLI.add_argument('--maxY', nargs=4, type=int, default=[0,0,0,0])
+CLI.add_argument('-l', '--logY', action='store_true', help='use log scale for the Y axes')
+CLI.add_argument('-i', '--interactive', action='store_true', help='open interactive python console after parsing the files')
+CLI.add_argument('--csv', action='store_true', help='generate CSV output')
+CLI.add_argument('-m', '--million', action='store_true', help='divide values by country population in millions')
+CLI.add_argument('--skip', nargs=4, default=[False, False, True, False], help='boolean (True|False) whether the specific plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
 args = CLI.parse_args()
 
-countries = args.c
+countries = args.country
 countries.sort()
 daysBefore = int(args.days)
-maxY = [args.maxCases, args.maxDeaths, args.maxRec, args.maxActive]
+maxY = args.maxY
+skip = args.skip
+
+if len(maxY) != 4:
+    print('maxY should receive 4 values')
+    sys.exit(-1)
+
 logY = args.logY
-interactiveMode = args.i
-files = args.f
+interactiveMode = args.interactive
+files = args.files
 printCSV = args.csv
-perMillion = args.mil
+perMillion = args.million
 
 #
 # Initialize data collections for reading from file
@@ -256,7 +261,6 @@ recoveredReported = dict()
 # for plotting
 #
 xValues = []
-skip = [False, False, True, False]
 yValues = [dict(), dict(), dict(), dict()]
 for i in range(maxDim):
     # yValues[i] = dict()
@@ -270,10 +274,10 @@ readFiles()
 if printCSV:
     generateCSV()
 
-# plotGraph(daysBefore)
-
 if interactiveMode:
     code.interact(local=locals())
+else:
+    plotGraph(daysBefore)
 
 # total = dict()
 # for country in countries:
@@ -283,3 +287,5 @@ if interactiveMode:
 
 # countries=['US','Italy','China','Spain','Germany','France','Iran','UK']
 # countries=['Turkey','Portugal','Norway','Greece', 'Ireland', 'Denmark']
+# countries=['Turkey','Italy','Germany','Greece', 'Turkey', 'UK', 'Spain']
+# countries=['Japan', 'China']
