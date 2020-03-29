@@ -1,8 +1,3 @@
-# call with
-#
-# python3.5 read.py --c Spain Italy Germany Greece UK --f ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv
-#
-
 import sys
 import csv
 import argparse
@@ -279,13 +274,18 @@ if interactiveMode:
 else:
     plotGraph(daysBefore)
 
-# total = dict()
-# for country in countries:
-#     total[country] = []
-#     for x in xValues:
-#         total[country].append(yValues[0][country][x] + yValues[1][country][x]  + yValues[2][country][x] )
 
 # countries=['US','Italy','China','Spain','Germany','France','Iran','UK']
 # countries=['Turkey','Portugal','Norway','Greece', 'Ireland', 'Denmark']
 # countries=['Turkey','Italy','Germany','Greece', 'Turkey', 'UK', 'Spain']
 # countries=['Japan', 'China']
+
+# cases = yValues[0]['Greece']
+#  dcases = [ cases[i+1]/cases[i] if cases[i] != 0 else 0  for i in range(len(cases)-1)]
+
+def changeVector(cases):
+    return [ cases[i+1]/cases[i] if cases[i] != 0 else 1  for i in range(len(cases)-1)]
+
+def countryChange(country, i):
+    return changeVector(yValues[i][country])
+

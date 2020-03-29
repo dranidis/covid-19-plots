@@ -1,3 +1,4 @@
 .vscode/
 *.csv
 .~lock.*
+scratchpad.py
