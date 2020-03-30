@@ -31,38 +31,37 @@ def processCountry(country):
             yValues[i][country].append(0)
 
 
-def plotGraph(daysBefore = 0):
+def plotGraph(daysBefore=0):
     numOfPlots = len([s for s in skip if not s])
+
+    fig, ax = plt.subplots(numOfPlots, 1)
 
     plotNr = 0
     for i in range(maxDim):
         if skip[i]:
             continue
-        else:
-            plotNr += 1
-
-        plt.subplot(numOfPlots, 1, plotNr)
+        # plt.subplot(numOfPlots, 1, plotNr)
 
         if logY:
-            plt.yscale('log')
+            ax[plotNr].set_yscale('log')
 
-        plt.xlabel('Date')
+        ax[plotNr].set_xlabel('Date')
         plotLabel = label[i]
 
         if perMillion:
             plotLabel += ' per million'
 
-        plt.ylabel(plotLabel)
+        ax[plotNr].set_ylabel(plotLabel)
 
         # plt.title('Title')
-        plt.xticks(xValues, xTicks, rotation='vertical')
+        ax[plotNr].set_xticks(xValues, xTicks)
 
         maxX = len(xValues)
         if daysBefore != 0:
             minX = maxX - daysBefore  # 30 days before
-            plt.xlim([minX, maxX])
+            ax[plotNr].set_xlim([minX, maxX])
         if maxY[i] != 0:
-            plt.ylim([0, maxY[i]])
+            ax[plotNr].set_ylim([0, maxY[i]])
 
         for country in countries:
             if perMillion:
@@ -70,12 +69,15 @@ def plotGraph(daysBefore = 0):
                     map(lambda y: y/population[country], yValues[i][country]))
             else:
                 ys = yValues[i][country]
-            plt.plot(xValues, ys, 'o-')
+            ax[plotNr].plot(xValues, ys, color=color[country],
+                            marker=marker[country])
+
+        plotNr += 1
 
     if len(countries) > 5:
-        plt.legend(countries, loc='upper left', fontsize='xx-small', ncol=2)
+        ax[0].legend(countries, loc='upper left', fontsize='xx-small', ncol=2)
     else:
-        plt.legend(countries, loc='upper left', fontsize='small', ncol=1)
+        ax[0].legend(countries, loc='upper left', fontsize='small', ncol=1)
 
     plt.show()
 
@@ -211,6 +213,24 @@ population['Portugal'] = 11
 population['Switzerland'] = 8.5
 population['Japan'] = 127
 
+color = dict()
+marker = dict()
+
+colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+markers = ['.', 'o', '^', 'v']
+markerNr = 0
+colorNr = 0
+for country in allCountries:
+    marker[country] = markers[markerNr]
+    color[country] = colors[colorNr]
+    markerNr += 1
+    if markerNr == len(markers):
+        markerNr = 0
+    colorNr += 1
+    if colorNr == len(colors):
+        colorNr = 0
+
+
 #
 CLI = argparse.ArgumentParser(description='Plot graphs for the COVID-19')
 CLI.add_argument('-c', '--country',
@@ -218,13 +238,18 @@ CLI.add_argument('-c', '--country',
                  type=str,
                  default=allCountries)
 CLI.add_argument('files', nargs='+', type=str)
-CLI.add_argument('-d', '--days', nargs='?', type=int, default=0, help='number of days to plot before today. By default plots start from the beginning of data collection.')
-CLI.add_argument('--maxY', nargs=4, type=int, default=[0,0,0,0])
-CLI.add_argument('-l', '--logY', action='store_true', help='use log scale for the Y axes')
-CLI.add_argument('-i', '--interactive', action='store_true', help='open interactive python console after parsing the files')
+CLI.add_argument('-d', '--days', nargs='?', type=int, default=0,
+                 help='number of days to plot before today. By default plots start from the beginning of data collection.')
+CLI.add_argument('--maxY', nargs=4, type=int, default=[0, 0, 0, 0])
+CLI.add_argument('-l', '--logY', action='store_true',
+                 help='use log scale for the Y axes')
+CLI.add_argument('-i', '--interactive', action='store_true',
+                 help='open interactive python console after parsing the files')
 CLI.add_argument('--csv', action='store_true', help='generate CSV output')
-CLI.add_argument('-m', '--million', action='store_true', help='divide values by country population in millions')
-CLI.add_argument('--skip', nargs=4, default=[False, False, True, False], help='boolean (True|False) whether the specific plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
+CLI.add_argument('-m', '--million', action='store_true',
+                 help='divide values by country population in millions')
+CLI.add_argument('--skip', nargs=4, default=[False, False, True, False],
+                 help='boolean (True|False) whether the specific plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
 args = CLI.parse_args()
 
 countries = args.country
@@ -264,6 +289,70 @@ for i in range(maxDim):
 xTicks = []
 
 
+
+
+# countries=['US','Italy','China','Spain','Germany','France','Iran','UK']
+# countries=['Turkey','Portugal','Norway','Greece', 'Ireland', 'Denmark']
+# countries=['Turkey','Italy','Germany','Greece', 'Turkey', 'UK', 'Spain']
+# countries=['Japan', 'China', 'Greece']
+# countries=['Greece', 'Turkey', 'UK', 'Italy', 'Spain']
+
+# cases = yValues[0]['Greece']
+#  dcases = [ cases[i+1]/cases[i] if cases[i] != 0 else 0  for i in range(len(cases)-1)]
+
+def changeVector(cases):
+    return [cases[i+1]/cases[i] if cases[i] != 0 else 1 for i in range(len(cases)-1)]
+
+def newCases(cases):
+    return [cases[i+1] - cases[i] for i in range(len(cases)-1)]
+
+def countryNewCases(country, i):
+    return newCases(yValues[i][country])
+
+
+def countryChange(country, i):
+    return changeVector(yValues[i][country])
+
+
+def runningTotal(cases, days):
+    total = []
+    numbers = len(cases) - days
+    for d in range(numbers):
+        t = 0
+        for i in range(days):
+            t += cases[d + i ]
+        total.append(t)
+    
+    return total
+
+# cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
+def scatterGraph(cdra):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
+    lastTime = 7
+    for country in countries:
+        totalNewCasesLastTime = runningTotal(countryNewCases(country, cdra), lastTime)
+        totalCases = yValues[cdra][country]
+        totalCases = totalCases[lastTime+1:]
+
+        pairs = [(i,j) for i,j in zip(totalNewCasesLastTime, totalCases) if i>0 and j>0]
+        new = [i for i,j in pairs]
+        tot = [j for i,j in pairs]
+
+        plt.xscale('log')
+        plt.yscale('log')
+
+        # plt.ylim(1, 1000000)
+        # plt.xlim(1, 1000000)
+        ax1.scatter(tot, new, color=color[country], marker=marker[country], label=country)
+
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+
+
 readFiles()
 
 if printCSV:
@@ -273,19 +362,3 @@ if interactiveMode:
     code.interact(local=locals())
 else:
     plotGraph(daysBefore)
-
-
-# countries=['US','Italy','China','Spain','Germany','France','Iran','UK']
-# countries=['Turkey','Portugal','Norway','Greece', 'Ireland', 'Denmark']
-# countries=['Turkey','Italy','Germany','Greece', 'Turkey', 'UK', 'Spain']
-# countries=['Japan', 'China']
-
-# cases = yValues[0]['Greece']
-#  dcases = [ cases[i+1]/cases[i] if cases[i] != 0 else 0  for i in range(len(cases)-1)]
-
-def changeVector(cases):
-    return [ cases[i+1]/cases[i] if cases[i] != 0 else 1  for i in range(len(cases)-1)]
-
-def countryChange(country, i):
-    return changeVector(yValues[i][country])
-
