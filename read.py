@@ -3,6 +3,9 @@ import csv
 import argparse
 import matplotlib.pyplot as plt
 import code
+import numpy as np
+
+from matplotlib.animation import FuncAnimation
 
 
 def processCountry(country):
@@ -54,7 +57,12 @@ def plotGraph(daysBefore=0):
         ax[plotNr].set_ylabel(plotLabel)
 
         # plt.title('Title')
-        ax[plotNr].set_xticks(xValues, xTicks)
+        # ax[plotNr].set_xticks(xValues)
+        # ax[plotNr].set_xticklabels(xTicks)
+        # ax[plotNr].tick_params(axis='x', labelrotation=45)
+        plt.xticks(xValues, xTicks,  rotation='vertical')
+
+        ax[plotNr].grid(True)
 
         maxX = len(xValues)
         if daysBefore != 0:
@@ -188,8 +196,8 @@ maxDim = len(label)
 # Initialize countries
 #
 # allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
-allCountries = ['Japan', 'Ireland', 'Denmark', 'Norway', 'US', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal', 'Switzerland']
+allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea']
 
 population = dict()
 population['US'] = 372
@@ -212,23 +220,24 @@ population['Belgium'] = 11
 population['Portugal'] = 11
 population['Switzerland'] = 8.5
 population['Japan'] = 127
+population['South Korea'] = 51
 
 color = dict()
 marker = dict()
 
-colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-markers = ['.', 'o', '^', 'v']
+colors = ['b', 'g', 'r', 'c', 'm', 'k', 'y']
+markers = ['s', 'o', '^', 'v', '<', '>', 'p', '*', 'd']
 markerNr = 0
 colorNr = 0
 for country in allCountries:
     marker[country] = markers[markerNr]
     color[country] = colors[colorNr]
-    markerNr += 1
-    if markerNr == len(markers):
-        markerNr = 0
-    colorNr += 1
-    if colorNr == len(colors):
-        colorNr = 0
+    markerNr = (markerNr + 1) % len(markers)
+    colorNr = (colorNr + 1) % len(colors)
+    # if markerNr == len(markers):
+    #     markerNr = 0
+    # if colorNr == len(colors):
+    #     colorNr = 0
 
 
 #
@@ -289,11 +298,9 @@ for i in range(maxDim):
 xTicks = []
 
 
-
-
 # countries=['US','Italy','China','Spain','Germany','France','Iran','UK']
 # countries=['Turkey','Portugal','Norway','Greece', 'Ireland', 'Denmark']
-# countries=['Turkey','Italy','Germany','Greece', 'Turkey', 'UK', 'Spain']
+# countries=['Turkey','Italy','Germany','Greece', 'UK', 'Spain']
 # countries=['Japan', 'China', 'Greece']
 # countries=['Greece', 'Turkey', 'UK', 'Italy', 'Spain']
 
@@ -303,8 +310,12 @@ xTicks = []
 def changeVector(cases):
     return [cases[i+1]/cases[i] if cases[i] != 0 else 1 for i in range(len(cases)-1)]
 
+
 def newCases(cases):
-    return [cases[i+1] - cases[i] for i in range(len(cases)-1)]
+    dcases = [cases[i+1] - cases[i] for i in range(len(cases)-1)]
+    dcases.insert(0, 0)
+    return dcases
+
 
 def countryNewCases(country, i):
     return newCases(yValues[i][country])
@@ -316,36 +327,58 @@ def countryChange(country, i):
 
 def runningTotal(cases, days):
     total = []
-    numbers = len(cases) - days
+    numbers = len(cases) - days + 1
     for d in range(numbers):
         t = 0
         for i in range(days):
-            t += cases[d + i ]
+            t += cases[d + i]
         total.append(t)
-    
+
     return total
 
+timePeriod = 7
+def newInPeriodTotalPairs(country, cdra):
+    lastTime = timePeriod
+    totalNewCasesLastTime = runningTotal(
+        countryNewCases(country, cdra), lastTime)
+    totalCases = yValues[cdra][country][lastTime-1:]
+    pairs = [(i, j)
+             for i, j in zip(totalNewCasesLastTime, totalCases) if j > 0]
+    return pairs
+
+
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
+
+
 def scatterGraph(cdra):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
-    lastTime = 7
-    for country in countries:
-        totalNewCasesLastTime = runningTotal(countryNewCases(country, cdra), lastTime)
-        totalCases = yValues[cdra][country]
-        totalCases = totalCases[lastTime+1:]
 
-        pairs = [(i,j) for i,j in zip(totalNewCasesLastTime, totalCases) if i>0 and j>0]
-        new = [i for i,j in pairs]
-        tot = [j for i,j in pairs]
+    xlabel = ['Total cases', 'Total Deaths', 'Total recoveries', 'Total active']
+    daysLabel = ' in last ' + str(timePeriod) + ' days'
+    ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
+            'New recoveries' + daysLabel, 'New active' + daysLabel]
+
+    lastTime = timePeriod
+    for country in countries:
+        totalNewCasesLastTime = runningTotal(
+            countryNewCases(country, cdra), lastTime)
+        totalCases = yValues[cdra][country][lastTime-1:]
+
+        pairs = [(i, j) for i, j in zip(
+            totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
+        new = [i for i, j in pairs]
+        tot = [j for i, j in pairs]
 
         plt.xscale('log')
         plt.yscale('log')
+        plt.xlabel(xlabel[cdra])
+        plt.ylabel(ylabel[cdra])
+        plt.grid(True)
 
-        # plt.ylim(1, 1000000)
-        # plt.xlim(1, 1000000)
-        ax1.scatter(tot, new, color=color[country], marker=marker[country], label=country)
+        ax1.plot(tot, new, color=color[country],
+                    marker=marker[country], label=country)
 
     plt.legend(loc='upper left')
     plt.show()
@@ -353,7 +386,71 @@ def scatterGraph(cdra):
 
 
 
+def initAnimatedScatterGraph(cdra, line):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
+
+    xlabel = ['Total cases', 'Total Deaths', 'Total recoveries', 'Total active']
+    daysLabel = ' in last ' + str(timePeriod) + ' days'
+    ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
+            'New recoveries' + daysLabel, 'New active' + daysLabel]
+
+    for country in countries:
+
+        new = []
+        tot = []
+
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(xlabel[cdra])
+        plt.ylabel(ylabel[cdra])
+        plt.grid(True)
+        plt.xlim(1, 100000)
+        plt.ylim(1, 10000)
+
+        line[country], = ax1.plot(tot, new, color=color[country],
+                    marker=marker[country], label=country)
+
+    plt.legend(loc='upper left')
+    
+    return fig, line
+
+
+
+def animation_frame(i, line, cdra):
+    print("Frame: ",i)
+    lastTime = timePeriod
+
+    toValue = 8+i
+    print("fromValue: ",toValue)
+    for country in countries:
+        partialYValues = yValues[cdra][country][0:toValue]
+
+        totalNewCasesLastTime = runningTotal(newCases(partialYValues), lastTime)
+        totalCases = partialYValues[lastTime-1:]
+
+        pairs = [(i, j) for i, j in zip(
+            totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
+        new = [i for i, j in pairs]
+        tot = [j for i, j in pairs]
+
+        line[country].set_xdata(tot)
+        line[country].set_ydata(new)
+    
+    return line,
+
+
+
 readFiles()
+
+def animate(cdra):
+    line = dict()
+    fig, line = initAnimatedScatterGraph(cdra, line)
+    passlines = line
+    animation = FuncAnimation(fig, func=animation_frame, fargs=(passlines, cdra), frames=70, interval=10, repeat=False)
+    plt.show()
+
 
 if printCSV:
     generateCSV()
