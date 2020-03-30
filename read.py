@@ -185,10 +185,9 @@ def generateCSV():
         index += 1
 
 
-
 def checkData():
     print("Fixing inconsistent data for cases and deaths")
-    for i in range(maxDim-1): # last dim is active (calculated)
+    for i in range(maxDim-1):  # last dim is active (calculated)
         print('\t--------------------------------------')
         print("\tChecking ", i)
         print('\t--------------------------------------')
@@ -366,7 +365,10 @@ def runningTotal(cases, days):
 
     return total
 
+
 timePeriod = 7
+
+
 def newInPeriodTotalPairs(country, cdra):
     lastTime = timePeriod
     totalNewCasesLastTime = runningTotal(
@@ -385,10 +387,11 @@ def scatterGraph(cdra):
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
-    xlabel = ['Total cases', 'Total Deaths', 'Total recoveries', 'Total active']
+    xlabel = ['Total cases', 'Total Deaths',
+              'Total recoveries', 'Total active']
     daysLabel = ' in last ' + str(timePeriod) + ' days'
     ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
-            'New recoveries' + daysLabel, 'New active' + daysLabel]
+              'New recoveries' + daysLabel, 'New active' + daysLabel]
 
     lastTime = timePeriod
     for country in countries:
@@ -408,23 +411,23 @@ def scatterGraph(cdra):
         plt.grid(True)
 
         ax1.plot(tot, new, color=color[country],
-                    marker=marker[country], label=country)
+                 marker=marker[country], label=country)
 
     plt.legend(loc='upper left')
     plt.show()
 
 
 
-
-def initAnimatedScatterGraph(cdra, line):
+def initAnimatedScatterGraph(cdra, line, annotation):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
-    xlabel = ['Total cases', 'Total Deaths', 'Total recoveries', 'Total active']
+    xlabel = ['Total cases', 'Total Deaths',
+              'Total recoveries', 'Total active']
     daysLabel = ' in last ' + str(timePeriod) + ' days'
     ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
-            'New recoveries' + daysLabel, 'New active' + daysLabel]
+              'New recoveries' + daysLabel, 'New active' + daysLabel]
 
     for country in countries:
 
@@ -445,24 +448,27 @@ def initAnimatedScatterGraph(cdra, line):
             plt.xlim(1, 100000)
 
         line[country], = ax1.plot(tot, new, color=color[country],
-                    marker=marker[country], label=country)
+                                  marker=marker[country], label=country)
 
+        annotation[country] = ax1.annotate(
+            country, xy=(0.1, 0.1), xytext=(0.1, 0.1)
+        )
     plt.legend(loc='upper left')
-    
-    return fig, line
+
+    return fig, line, annotation,
 
 
-
-def animation_frame(i, line, cdra):
-    print("Frame: ",i)
+def animation_frame(i, line, cdra, annotation):
+    print("Frame: ", i)
     lastTime = timePeriod
 
     toValue = 8+i
-    print("fromValue: ",toValue)
+    print("fromValue: ", toValue)
     for country in countries:
         partialYValues = yValues[cdra][country][0:toValue]
 
-        totalNewCasesLastTime = runningTotal(newCases(partialYValues), lastTime)
+        totalNewCasesLastTime = runningTotal(
+            newCases(partialYValues), lastTime)
         totalCases = partialYValues[lastTime-1:]
 
         pairs = [(i, j) for i, j in zip(
@@ -472,19 +478,30 @@ def animation_frame(i, line, cdra):
 
         line[country].set_xdata(tot)
         line[country].set_ydata(new)
-    
-    return line,
 
+        if len(tot) > 0:
+            anx = tot[-1]
+            any = new[-1]
+        else: # outside the visible area
+            anx = 0.1
+            any = 0.1
+        annotation[country].set_position((anx*1.2, any/1.1))
+        annotation[country].xy = (anx, any)
+
+    return line, annotation,
 
 
 readFiles()
 checkData()
 
-def animate(cdra):
+
+def animate(cdra, speed=500, repeat=False):
     line = dict()
-    fig, line = initAnimatedScatterGraph(cdra, line)
+    annotation = dict()
+    fig, line, annotation = initAnimatedScatterGraph(cdra, line, annotation)
     passlines = line
-    animation = FuncAnimation(fig, func=animation_frame, fargs=(passlines, cdra), frames=70, interval=10, repeat=False)
+    animation = FuncAnimation(fig, func=animation_frame, fargs=(
+        passlines, cdra, annotation), frames=70, interval=speed, repeat=repeat, blit=False)
     plt.show()
 
 
