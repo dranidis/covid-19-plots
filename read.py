@@ -185,6 +185,36 @@ def generateCSV():
         index += 1
 
 
+
+def checkData():
+    print("Fixing inconsistent data for cases and deaths")
+    for i in range(maxDim-1): # last dim is active (calculated)
+        print('\t--------------------------------------')
+        print("\tChecking ", i)
+        print('\t--------------------------------------')
+        for country in countries:
+            previous = 0
+            index = 0
+            for date in xTicks:
+                current = int(yValues[i][country][index])
+                if current < previous:
+                    print('\t', date, country, i, previous, current, end='')
+                    if i == 0 and country == 'Japan' and date == '01-23':
+                        print('\t===> Correcting value to 2')
+                        yValues[i][country][index] = 2
+                    if i == 0 and country == 'Japan' and date == '02-07':
+                        print('\t===> Correcting previous value to 25')
+                        yValues[i][country][index-1] = 25
+                    if i == 0 and country == 'Japan' and date == '03-16':
+                        print('\t===> Correcting value to 839')
+                        yValues[i][country][index] = 839
+                    if i == 1 and country == 'Japan' and date == '03-10':
+                        print('\t===> Correcting previous value to 10')
+                        yValues[i][country][index-1] = 10
+                previous = current
+                index += 1
+
+
 #
 # PROGRAM
 #
@@ -406,8 +436,13 @@ def initAnimatedScatterGraph(cdra, line):
         plt.xlabel(xlabel[cdra])
         plt.ylabel(ylabel[cdra])
         plt.grid(True)
-        plt.xlim(1, 100000)
+
+        plt.xlim(1, 1000000)
         plt.ylim(1, 10000)
+        if cdra in [0, 2, 3]:
+            plt.ylim(1, 1000000)
+        else:
+            plt.xlim(1, 100000)
 
         line[country], = ax1.plot(tot, new, color=color[country],
                     marker=marker[country], label=country)
@@ -443,6 +478,7 @@ def animation_frame(i, line, cdra):
 
 
 readFiles()
+checkData()
 
 def animate(cdra):
     line = dict()
