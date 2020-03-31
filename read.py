@@ -36,6 +36,9 @@ def processCountry(country):
 
 def plotGraph(daysBefore=0):
     numOfPlots = len([s for s in skip if not s])
+    if numOfPlots == 0:
+        print('No plots to draw.')
+        return
 
     fig, ax = plt.subplots(numOfPlots, 1)
 
@@ -45,31 +48,36 @@ def plotGraph(daysBefore=0):
             continue
         # plt.subplot(numOfPlots, 1, plotNr)
 
-        if logY:
-            ax[plotNr].set_yscale('log')
+        if numOfPlots == 1:
+            axes = ax
+        else:
+            axes = ax[plotNr]
 
-        ax[plotNr].set_xlabel('Date')
+        if logY:
+            axes.set_yscale('log')
+
+        axes.set_xlabel('Date')
         plotLabel = label[i]
 
         if perMillion:
             plotLabel += ' per million'
 
-        ax[plotNr].set_ylabel(plotLabel)
+        axes.set_ylabel(plotLabel)
 
         # plt.title('Title')
-        # ax[plotNr].set_xticks(xValues)
-        # ax[plotNr].set_xticklabels(xTicks)
-        # ax[plotNr].tick_params(axis='x', labelrotation=45)
-        plt.xticks(xValues, xTicks,  rotation='vertical')
+        axes.set_xticks(xValues)
+        axes.set_xticklabels(xTicks)
+        axes.tick_params(axis='x')
+        # plt.xticks(xValues, xTicks,  rotation='vertical')
 
-        ax[plotNr].grid(True)
+        axes.grid(True)
 
         maxX = len(xValues)
         if daysBefore != 0:
             minX = maxX - daysBefore  # 30 days before
-            ax[plotNr].set_xlim([minX, maxX])
+            axes.set_xlim([minX, maxX])
         if maxY[i] != 0:
-            ax[plotNr].set_ylim([0, maxY[i]])
+            axes.set_ylim([0, maxY[i]])
 
         for country in countries:
             if perMillion:
@@ -77,15 +85,15 @@ def plotGraph(daysBefore=0):
                     map(lambda y: y/population[country], yValues[i][country]))
             else:
                 ys = yValues[i][country]
-            ax[plotNr].plot(xValues, ys, color=color[country],
-                            marker=marker[country])
+            axes.plot(xValues, ys, color=color[country],
+                      marker=marker[country])
 
         plotNr += 1
 
     if len(countries) > 5:
-        ax[0].legend(countries, loc='upper left', fontsize='xx-small', ncol=2)
+        plt.legend(countries, loc='upper left', fontsize='xx-small', ncol=2)
     else:
-        ax[0].legend(countries, loc='upper left', fontsize='small', ncol=1)
+        plt.legend(countries, loc='upper left', fontsize='small', ncol=1)
 
     plt.show()
 
@@ -268,26 +276,36 @@ for country in allCountries:
     # if colorNr == len(colors):
     #     colorNr = 0
 
-
+#
+# CLI arguments
 #
 CLI = argparse.ArgumentParser(description='Plot graphs for the COVID-19')
 CLI.add_argument('-c', '--country',
                  nargs='*',
                  type=str,
-                 default=allCountries)
-CLI.add_argument('files', nargs='+', type=str)
+                 default=allCountries,
+                 help='countries to present in plots')
+CLI.add_argument('files', nargs='+', type=str,
+                 help='csv files to read from')
 CLI.add_argument('-d', '--days', nargs='?', type=int, default=0,
                  help='number of days to plot before today. By default plots start from the beginning of data collection.')
-CLI.add_argument('--maxY', nargs=4, type=int, default=[0, 0, 0, 0])
+CLI.add_argument('--maxY', nargs=4, type=int, default=[0, 0, 0, 0],
+                 help='y axes limits for time plots')
 CLI.add_argument('-l', '--logY', action='store_true',
-                 help='use log scale for the Y axes')
+                 help='use log scale for the Y axes of time plots')
 CLI.add_argument('-i', '--interactive', action='store_true',
                  help='open interactive python console after parsing the files')
 CLI.add_argument('--csv', action='store_true', help='generate CSV output')
+CLI.add_argument('-p', '--plot', action='store_true',
+                 help='time plots of cases/deaths/recoveries/active. Choose plots to skip with the --skip flag')
+CLI.add_argument('-a', '--animate', action='store_true',
+                 help='animate new numbers/total numbers. Choose which numbers to plot with the --number flag')
+CLI.add_argument('-n', '--number', nargs='?', type=int, default=1,
+                 help='number to animate 0:cases, 1:deaths, 2:recovered, 3:active')
 CLI.add_argument('-m', '--million', action='store_true',
-                 help='divide values by country population in millions')
+                 help='in plots divide values by country population in millions')
 CLI.add_argument('--skip', nargs=4, default=[False, False, True, False],
-                 help='boolean (True|False) whether the specific plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
+                 help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
 args = CLI.parse_args()
 
 countries = args.country
@@ -296,9 +314,6 @@ daysBefore = int(args.days)
 maxY = args.maxY
 skip = args.skip
 
-if len(maxY) != 4:
-    print('maxY should receive 4 values')
-    sys.exit(-1)
 
 logY = args.logY
 interactiveMode = args.interactive
@@ -380,8 +395,6 @@ def newInPeriodTotalPairs(country, cdra):
 
 
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
-
-
 def scatterGraph(cdra):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -417,7 +430,6 @@ def scatterGraph(cdra):
     plt.show()
 
 
-
 def initAnimatedScatterGraph(cdra, line, annotation):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -430,7 +442,6 @@ def initAnimatedScatterGraph(cdra, line, annotation):
               'New recoveries' + daysLabel, 'New active' + daysLabel]
 
     for country in countries:
-
         new = []
         tot = []
 
@@ -454,16 +465,20 @@ def initAnimatedScatterGraph(cdra, line, annotation):
             country, xy=(0.1, 0.1), xytext=(0.1, 0.1)
         )
     plt.legend(loc='upper left')
+    dateText = ax1.text(1000, 10, '-----', fontsize=36,
+                        bbox=dict(facecolor='red', alpha=0.5))
 
-    return fig, line, annotation,
+    return fig, line, annotation, dateText
 
 
-def animation_frame(i, line, cdra, annotation):
-    print("Frame: ", i)
+def animation_frame(i, line, cdra, annotation, dateText):
     lastTime = timePeriod
 
-    toValue = 8+i
-    print("fromValue: ", toValue)
+    toValue = timePeriod + i
+    date = xTicks[toValue-1]
+
+    dateText.set_text(date)
+
     for country in countries:
         partialYValues = yValues[cdra][country][0:toValue]
 
@@ -482,33 +497,40 @@ def animation_frame(i, line, cdra, annotation):
         if len(tot) > 0:
             anx = tot[-1]
             any = new[-1]
-        else: # outside the visible area
+        else:  # outside the visible area
             anx = 0.1
             any = 0.1
         annotation[country].set_position((anx*1.2, any/1.1))
         annotation[country].xy = (anx, any)
 
-    return line, annotation,
-
-
-readFiles()
-checkData()
+    return line, annotation, dateText,
 
 
 def animate(cdra, speed=500, repeat=False):
     line = dict()
     annotation = dict()
-    fig, line, annotation = initAnimatedScatterGraph(cdra, line, annotation)
+    fig, line, annotation, dateText = initAnimatedScatterGraph(
+        cdra, line, annotation)
     passlines = line
     animation = FuncAnimation(fig, func=animation_frame, fargs=(
-        passlines, cdra, annotation), frames=70, interval=speed, repeat=repeat, blit=False)
+        passlines, cdra, annotation, dateText), frames=len(xTicks)-timePeriod+1, interval=speed, repeat=repeat, blit=False)
     plt.show()
 
+
+#
+# START-UP
+#
+readFiles()
+checkData()
+
+if args.animate:
+    animate(args.number)
 
 if printCSV:
     generateCSV()
 
+if args.plot:
+    plotGraph(daysBefore)
+
 if interactiveMode:
     code.interact(local=locals())
-else:
-    plotGraph(daysBefore)
