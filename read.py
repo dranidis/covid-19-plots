@@ -7,6 +7,8 @@ import numpy as np
 
 from matplotlib.animation import FuncAnimation
 
+from util import runningTotal
+
 
 def processCountry(country):
     cases = 0
@@ -234,7 +236,7 @@ maxDim = len(label)
 #
 # allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea']
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea','Kosovo']
 
 population = dict()
 population['US'] = 372
@@ -258,6 +260,7 @@ population['Portugal'] = 11
 population['Switzerland'] = 8.5
 population['Japan'] = 127
 population['South Korea'] = 51
+population['Kosovo'] = 1.8
 
 color = dict()
 marker = dict()
@@ -367,18 +370,6 @@ def countryNewCases(country, i):
 
 def countryChange(country, i):
     return changeVector(yValues[i][country])
-
-
-def runningTotal(cases, days):
-    total = []
-    numbers = len(cases) - days + 1
-    for d in range(numbers):
-        t = 0
-        for i in range(days):
-            t += cases[d + i]
-        total.append(t)
-
-    return total
 
 
 timePeriod = 7
@@ -514,6 +505,22 @@ def animate(cdra, speed=500, repeat=False):
     passlines = line
     animation = FuncAnimation(fig, func=animation_frame, fargs=(
         passlines, cdra, annotation, dateText), frames=len(xTicks)-timePeriod+1, interval=speed, repeat=repeat, blit=False)
+
+    # animation.save('im.mp4')
+    plt.show()
+
+
+def lastWeekVsTotal():
+    past = len(xTicks) - timePeriod 
+    for country in countries:
+        s = [j/i if i>0 else np.nan for i,j in zip(yValues[1][country][-past:], runningTotal(newCases(yValues[1][country]), 7)[-past:]) ]
+        plt.plot(s, color=color[country],
+                      marker=marker[country])
+    if len(countries) > 5:
+        plt.legend(countries, loc='lower left', fontsize='xx-small', ncol=2)
+    else:
+        plt.legend(countries, loc='lower left', fontsize='small', ncol=1)
+    plt.ylabel('Last week deaths/Total deaths')        
     plt.show()
 
 
