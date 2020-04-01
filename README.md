@@ -5,45 +5,48 @@
 **Requirements**
 
 * Download the data repository: https://github.com/CSSEGISandData/COVID-19
-* Python version min 3.5
+* Python version min 3.5, numpy, matplotlib
 * Not all countries all plotted. More countries can be added in the ```./countries.py``` file by adding them to the array of ```allCountries``` and providing their ```population```.
 
 Minimum command line options:
 ```
-python3.5 read.py <path of csse_covid_19_daily_reports>/*.csv
+python read.py <path of csse_covid_19_daily_reports>/*.csv
 ```
 Will parse all files but will not do anything else.
 
 See Help below for options.
 
 ## Examples
+
+All examples below assume that the data repository COVID-19 is located in the parent directory.
+
 Plot all countries cases and deaths
 ```
-python3.5 read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -p
+python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -p
 ```
 ![](figs/figure_1.png)
 
 
 Plot last week's death per total deaths for specific countries
 ```
-python3.5 read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -w -c Greece Italy Spain UK US
+python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -w -c Greece Italy Spain UK US
 ```
 ![](figs/figure_2.png)
 
 Animate deaths per week vs total deaths for all countries, for the last 30 days
 ```
-python3.5 read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -d 30 -c Greece Italy Spain UK US
+python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -d 30 -c Greece Italy Spain UK US
 ```
 Save a gif animation
 ```
-python3.5 read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -s anim.gif
+python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -s anim.gif
 ```
 
 ![](figs/anim.gif)
 
 ## Help
 ```
-python3.5 read.py -h
+python read.py -h
 ```
 
 Output:

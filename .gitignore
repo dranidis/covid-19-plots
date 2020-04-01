@@ -1,6 +1,10 @@
+# PYTHON
 __pycache__/
 
+# VSCODE
 .vscode/
+
+# MORE
 *.csv
 .~lock.*
 scratchpad.py
