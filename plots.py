@@ -11,9 +11,6 @@ perMillion = False
 maxY = [0, 0, 0, 0]
 timePeriod = 7
 
-xValues = []
-xTicks = []
-
 color = dict()
 marker = dict()
 
@@ -64,14 +61,14 @@ def plotGraph(daysBefore=0):
         axes.set_ylabel(plotLabel)
 
         # plt.title('Title')
-        axes.set_xticks(xValues)
-        axes.set_xticklabels(xTicks)
+        axes.set_xticks(c.xValues)
+        axes.set_xticklabels(c.xTicks)
         axes.tick_params(axis='x')
         # plt.xticks(xValues, xTicks,  rotation='vertical')
 
         axes.grid(True)
 
-        maxX = len(xValues)
+        maxX = len(c.xValues)
         if daysBefore != 0:
             minX = maxX - daysBefore  # 30 days before
             axes.set_xlim([minX, maxX])
@@ -84,7 +81,7 @@ def plotGraph(daysBefore=0):
                     map(lambda y: y/c.population[country], c.yValues[i][country]))
             else:
                 ys = c.yValues[i][country]
-            axes.plot(xValues, ys, color=color[country],
+            axes.plot(c.xValues, ys, color=color[country],
                       marker=marker[country])
 
         plotNr += 1
@@ -176,7 +173,7 @@ def initAnimatedScatterGraph(cdra, line, annotation):
 
 
 def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
-    fromValue, toValue = util.getFromTo(len(xTicks), timePeriod, daysBefore, i)
+    fromValue, toValue = util.getFromTo(len(c.xTicks), timePeriod, daysBefore, i)
     # if daysBefore == 0:
     #     fromValue = 0
     #     toValue = timePeriod + i
@@ -184,7 +181,7 @@ def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
     #     fromValue = len(xTicks) - daysBefore - 1 - timePeriod
     #     toValue = fromValue + timePeriod + i
 
-    date = xTicks[toValue-1]
+    date = c.xTicks[toValue-1]
 
     dateText.set_text(date)
 
@@ -223,7 +220,7 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
     passlines = line
 
     if daysBefore == 0:
-        frames = len(xTicks) - timePeriod + 1
+        frames = len(c.xTicks) - timePeriod + 1
     else:
         frames = daysBefore
 
@@ -238,13 +235,22 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
 
 
 def lastWeekVsTotal():
-    past = len(xTicks) - timePeriod
+    past = len(c.xTicks) - timePeriod
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
     for country in c.countries:
         s = [j/i if i > 0 else np.nan for i, j in zip(
             c.yValues[1][country][-past:],
             util.runningTotal(util.newCases(c.yValues[1][country]), 7)[-past:])]
         plt.plot(s, color=color[country],
                  marker=marker[country])
+
+        annotation = ax1.annotate(
+            country, xy=(len(s), s[-1]), xytext=(len(s), s[-1])
+        )
+
     if len(c.countries) > 5:
         plt.legend(c.countries, loc='lower left', fontsize='xx-small', ncol=2)
     else:

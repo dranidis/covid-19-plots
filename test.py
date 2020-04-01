@@ -19,7 +19,7 @@ class MyTest(unittest.TestCase):
         self.assertEqual(util.newCases([1,3]), [1,2])
         self.assertEqual(util.newCases([2,2,5,5]), [2,0,3,0])
 
-    def testNewCases(self):
+    def testGetFromTo(self):
         # getFromTo(length, timePeriod, daysBefore, frameNr)
         # returns the index of first data, index+1 of last
         length = 10 # all the data
