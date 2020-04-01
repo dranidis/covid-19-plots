@@ -2,7 +2,6 @@ import csv
 
 # Initialize countries
 #
-# allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
                 'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada']
 
@@ -48,7 +47,6 @@ xTicks = []
 yValues = [dict(), dict(), dict(), dict()]
 
 for i in range(maxDim):
-    # yValues[i] = dict()
     for country in countries:
         yValues[i][country] = []
 

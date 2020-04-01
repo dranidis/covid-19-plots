@@ -6,7 +6,7 @@
 
 * Download the data repository: https://github.com/CSSEGISandData/COVID-19
 * Python version min 3.5
-* Not all countries all plotted. More countries can be added in the ```./countries.py``` file by adding them to the array of countries and providing their population.
+* Not all countries all plotted. More countries can be added in the ```./countries.py``` file by adding them to the array of ```allCountries``` and providing their ```population```.
 
 Minimum command line options:
 ```
