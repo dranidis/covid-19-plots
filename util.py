@@ -16,3 +16,12 @@ def newCases(cases):
     dcases.insert(0, cases[0])
     return dcases
 
+def getFromTo(length, timePeriod, daysBefore, frameNr):
+    if daysBefore == 0:
+        fromValue = 0
+        toValue = timePeriod + frameNr
+    else:
+        fromValue = length - daysBefore + 1 - timePeriod
+        toValue = fromValue + timePeriod + frameNr
+
+    return fromValue, toValue    

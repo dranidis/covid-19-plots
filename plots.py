@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -7,7 +8,7 @@ import countries as c
 skip = [False, False, False, False]
 logY = False
 perMillion = False
-maxY = [0,0,0,0]
+maxY = [0, 0, 0, 0]
 timePeriod = 7
 
 xValues = []
@@ -30,6 +31,7 @@ for country in c.allCountries:
     #     markerNr = 0
     # if colorNr == len(colors):
     #     colorNr = 0
+
 
 def plotGraph(daysBefore=0):
     numOfPlots = len([s for s in skip if not s])
@@ -95,6 +97,8 @@ def plotGraph(daysBefore=0):
     plt.show()
 
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
+
+
 def scatterGraph(cdra):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -171,8 +175,15 @@ def initAnimatedScatterGraph(cdra, line, annotation):
     return fig, line, annotation, dateText
 
 
-def animation_frame(i, line, cdra, annotation, dateText):
-    toValue = timePeriod + i
+def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
+    fromValue, toValue = util.getFromTo(len(xTicks), timePeriod, daysBefore, i)
+    # if daysBefore == 0:
+    #     fromValue = 0
+    #     toValue = timePeriod + i
+    # else:
+    #     fromValue = len(xTicks) - daysBefore - 1 - timePeriod
+    #     toValue = fromValue + timePeriod + i
+
     date = xTicks[toValue-1]
 
     dateText.set_text(date)
@@ -181,8 +192,8 @@ def animation_frame(i, line, cdra, annotation, dateText):
         partialYValues = c.yValues[cdra][country][0:toValue]
 
         totalNewCasesLastTime = util.runningTotal(
-            util.newCases(partialYValues), timePeriod)
-        totalCases = partialYValues[timePeriod-1:]
+            util.newCases(partialYValues), timePeriod)[fromValue:]
+        totalCases = partialYValues[timePeriod-1:][fromValue:]
 
         pairs = [(i, j) for i, j in zip(
             totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
@@ -204,28 +215,33 @@ def animation_frame(i, line, cdra, annotation, dateText):
     return line, annotation, dateText,
 
 
-def animate(cdra, speed=500, repeat=False):
+def animate(cdra, daysBefore=0, speed=500, repeat=False):
     line = dict()
     annotation = dict()
     fig, line, annotation, dateText = initAnimatedScatterGraph(
         cdra, line, annotation)
     passlines = line
+
+    if daysBefore == 0:
+        frames = len(xTicks) - timePeriod + 1
+    else:
+        frames = daysBefore
+
     animation = FuncAnimation(fig, func=animation_frame,
-                              fargs=(passlines, cdra, annotation, dateText),
-                              frames=len(xTicks)-timePeriod+1,
+                              fargs=(passlines, cdra, annotation,
+                                     dateText, daysBefore),
+                              frames=frames,
                               interval=speed, repeat=repeat, blit=False)
 
     # animation.save('im.mp4')
     plt.show()
 
 
-
-
 def lastWeekVsTotal():
     past = len(xTicks) - timePeriod
     for country in c.countries:
         s = [j/i if i > 0 else np.nan for i, j in zip(
-            c.yValues[1][country][-past:], 
+            c.yValues[1][country][-past:],
             util.runningTotal(util.newCases(c.yValues[1][country]), 7)[-past:])]
         plt.plot(s, color=color[country],
                  marker=marker[country])

@@ -2,7 +2,6 @@ import sys
 import csv
 import argparse
 import code
-import numpy as np
 
 
 import plots
