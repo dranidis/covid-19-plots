@@ -5,6 +5,8 @@ from matplotlib.animation import FuncAnimation
 import util
 import countries as c
 
+figsizeX, figsizeY = (15, 10)
+
 skip = [False, False, False, False]
 logY = False
 perMillion = False
@@ -36,7 +38,7 @@ def plotGraph(daysBefore=0):
         print('No plots to draw.')
         return
 
-    fig, ax = plt.subplots(numOfPlots, 1)
+    fig, ax = plt.subplots(numOfPlots, 1, figsize=(figsizeX, figsizeY))
 
     plotNr = 0
     for i in range(c.maxDim):
@@ -97,7 +99,7 @@ def plotGraph(daysBefore=0):
 
 
 def scatterGraph(cdra):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(figsizeX, figsizeY))
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
@@ -132,7 +134,8 @@ def scatterGraph(cdra):
 
 
 def initAnimatedScatterGraph(cdra, line, annotation):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(figsizeX, figsizeY))
+    
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
@@ -237,7 +240,7 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
 def lastWeekVsTotal():
     past = len(c.xTicks) - timePeriod
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(figsizeX, figsizeY))
     ax1 = fig.add_subplot(111)
 
     for country in c.countries:

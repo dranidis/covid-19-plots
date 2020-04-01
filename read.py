@@ -2,7 +2,7 @@ import sys
 import argparse
 import code
 
-import plots
+import plots as p
 import countries as c
 
 #
@@ -40,10 +40,10 @@ args = CLI.parse_args()
 c.countries = args.country
 c.countries.sort()
 
-plots.maxY = args.maxY
-plots.skip = args.skip
-plots.perMillion = args.million
-plots.logY = args.logY
+p.maxY = args.maxY
+p.skip = args.skip
+p.perMillion = args.million
+p.logY = args.logY
 
 interactiveMode = args.interactive
 daysBefore = int(args.days)
@@ -58,10 +58,10 @@ c.readFiles(files)
 c.checkData()
 
 if args.plot:
-    plots.plotGraph(daysBefore)
+    p.plotGraph(daysBefore)
 
 if args.animate:
-    plots.animate(args.number, daysBefore)
+    p.animate(args.number, daysBefore)
 
 if printCSV:
     c.generateCSV()
