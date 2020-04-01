@@ -39,6 +39,8 @@ CLI.add_argument('--skip', nargs=4, default=[False, False, True, True],
                  help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
 CLI.add_argument('-w', '--week', action='store_true', 
                  help='Plot last week vs total')
+CLI.add_argument('-r', '--runningTotal', nargs='?', type=int, default=7,
+                 help='number of days to calculate running totals (in animation/last week vs total)')          
 args = CLI.parse_args()
 
 c.countries = args.country
@@ -49,6 +51,7 @@ p.skip = args.skip
 p.perMillion = args.million
 p.logY = args.logY
 p.savetofile = args.savetofile
+p.timePeriod = int(args.runningTotal)
 
 #
 # START-UP

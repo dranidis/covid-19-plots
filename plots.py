@@ -23,6 +23,7 @@ markers = ['s', 'o', '^', 'v', '<', '>', 'p', '*', 'd']
 markerNr = 0
 colorNr = 0
 
+
 extraFramesAtTheEnd = 10
 
 for country in c.allCountries:
@@ -139,7 +140,7 @@ def scatterGraph(cdra):
 
 def initAnimatedScatterGraph(cdra, line, annotation):
     fig = plt.figure(figsize=(figsizeX, figsizeY))
-    
+
     ax1 = fig.add_subplot(111)
     # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
@@ -188,7 +189,8 @@ def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
     if i >= frames:
         i = frames - 1
 
-    fromValue, toValue = util.getFromTo(len(c.xTicks), timePeriod, daysBefore, i)
+    fromValue, toValue = util.getFromTo(
+        len(c.xTicks), timePeriod, daysBefore, i)
 
     date = c.xTicks[toValue-1]
 
@@ -255,8 +257,8 @@ def lastWeekVsTotal(cdra):
 
     for country in c.countries:
         s = [j/i if i > 0 else np.nan for i, j in zip(
-            c.yValues[1][country][-past:],
-            util.runningTotal(util.newCases(c.yValues[cdra][country]), 7)[-past:])]
+            c.yValues[cdra][country][-past:],
+            util.runningTotal(util.newCases(c.yValues[cdra][country]), timePeriod)[-past:])]
         plt.plot(s, color=color[country],
                  marker=marker[country])
 
@@ -268,5 +270,5 @@ def lastWeekVsTotal(cdra):
         plt.legend(c.countries, loc='lower left', fontsize='xx-small', ncol=2)
     else:
         plt.legend(c.countries, loc='lower left', fontsize='small', ncol=1)
-    plt.ylabel('Last week deaths/Total deaths')
+    plt.ylabel('Last '+ str(timePeriod) + ' days ' + c.label[cdra] + ' / Total ' + c.label[cdra])
     plt.show()
