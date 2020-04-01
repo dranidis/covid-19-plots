@@ -16,6 +16,16 @@ CLI.add_argument('-c', '--country',
                  help='countries to present in plots')
 CLI.add_argument('files', nargs='+', type=str,
                  help='csv files to read from')
+
+CLI.add_argument('-p', '--plot', action='store_true',
+                 help='time plots of cases/deaths/recoveries/active. Choose plots to skip with the --skip flag')
+CLI.add_argument('-t', '--totalsGraph', action='store_true',
+                 help='new n numbers in last d days/total numbers. Choose which numbers to plot with the --number flag and how many days with the -d flag.')
+CLI.add_argument('-a', '--animate', action='store_true',
+                 help='animate new numbers/total numbers. Choose which numbers to plot with the --number flag')
+CLI.add_argument('-w', '--week', action='store_true', 
+                 help='Plot last days sum vs total. Although the flag is named week any number of days can be set with -r')
+
 CLI.add_argument('-d', '--days', nargs='?', type=int, default=0,
                  help='number of days to plot before today. By default plots start from the beginning of data collection.')
 CLI.add_argument('--maxY', nargs=4, type=int, default=[0, 0, 0, 0],
@@ -25,10 +35,8 @@ CLI.add_argument('-l', '--logY', action='store_true',
 CLI.add_argument('-i', '--interactive', action='store_true',
                  help='open interactive python console after parsing the files')
 CLI.add_argument('--csv', action='store_true', help='generate CSV output')
-CLI.add_argument('-p', '--plot', action='store_true',
-                 help='time plots of cases/deaths/recoveries/active. Choose plots to skip with the --skip flag')
-CLI.add_argument('-a', '--animate', action='store_true',
-                 help='animate new numbers/total numbers. Choose which numbers to plot with the --number flag')
+
+
 CLI.add_argument('-n', '--number', nargs='?', type=int, default=1,
                  help='number to animate 0:cases, 1:deaths, 2:recovered, 3:active')
 CLI.add_argument('-s', '--savetofile', nargs='?', type=str,
@@ -37,10 +45,8 @@ CLI.add_argument('-m', '--million', action='store_true',
                  help='in plots divide values by country population in millions')
 CLI.add_argument('--skip', nargs=4, default=[False, False, True, True],
                  help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
-CLI.add_argument('-w', '--week', action='store_true', 
-                 help='Plot last week vs total')
 CLI.add_argument('-r', '--runningTotal', nargs='?', type=int, default=7,
-                 help='number of days to calculate running totals (in animation/last week vs total)')          
+                 help='number of days to calculate running totals (in animation/last days sum vs total)')          
 args = CLI.parse_args()
 
 c.countries = args.country
@@ -69,7 +75,10 @@ if args.csv:
     c.generateCSV()
 
 if args.week:
-    p.lastWeekVsTotal(args.number)
+    p.lastDaysSumVsTotal(args.number)
+
+if args.totalsGraph:
+    p.totalsGraph(args.number, int(args.days))
 
 if args.interactive:
     code.interact(local=locals())

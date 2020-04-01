@@ -51,12 +51,6 @@ python read.py -h
 
 Output:
 ```
-usage: read.py [-h] [-c [COUNTRY [COUNTRY ...]]] [-d [DAYS]]
-               [--maxY MAXY MAXY MAXY MAXY] [-l] [-i] [--csv] [-p] [-a]
-               [-n [NUMBER]] [-s [SAVETOFILE]] [-m]
-               [--skip SKIP SKIP SKIP SKIP]
-               files [files ...]
-
 Plot graphs for the COVID-19
 
 positional arguments:
@@ -66,6 +60,15 @@ optional arguments:
   -h, --help            show this help message and exit
   -c [COUNTRY [COUNTRY ...]], --country [COUNTRY [COUNTRY ...]]
                         countries to present in plots
+  -p, --plot            time plots of cases/deaths/recoveries/active. Choose
+                        plots to skip with the --skip flag
+  -t, --totalNumbers    new n numbers in last d days/total numbers. Choose
+                        which numbers to plot with the --number flag and how
+                        many days with the -d flag.
+  -a, --animate         animate new numbers/total numbers. Choose which
+                        numbers to plot with the --number flag
+  -w, --week            Plot last days sum vs total. Although the flag is
+                        named week any number of days can be set with -r
   -d [DAYS], --days [DAYS]
                         number of days to plot before today. By default plots
                         start from the beginning of data collection.
@@ -75,10 +78,6 @@ optional arguments:
   -i, --interactive     open interactive python console after parsing the
                         files
   --csv                 generate CSV output
-  -p, --plot            time plots of cases/deaths/recoveries/active. Choose
-                        plots to skip with the --skip flag
-  -a, --animate         animate new numbers/total numbers. Choose which
-                        numbers to plot with the --number flag
   -n [NUMBER], --number [NUMBER]
                         number to animate 0:cases, 1:deaths, 2:recovered,
                         3:active
@@ -89,7 +88,10 @@ optional arguments:
   --skip SKIP SKIP SKIP SKIP
                         boolean (True|False) whether the specific time plot
                         will be drawn. Plots: Cases, Deaths, Recovered, Active
-  -w, --week            Plot last week vs total
+  -r [RUNNINGTOTAL], --runningTotal [RUNNINGTOTAL]
+                        number of days to calculate running totals (in
+                        animation/last days sum vs total)
+
 
 ```
 
@@ -105,8 +107,16 @@ or starting some days ago (e.g. 20)
 ```
 p.plotGraph(20)
 ```
+Plot Last 7 days total vs Total (0:cases, 1:deaths, 2:recovered, 3:active)
+```
+p.totalsGraph(1)
+```
+Plot Last 7 days total vs Total starting 20 days ago (0:cases, 1:deaths, 2:recovered, 3:active)
+```
+p.totalsGraph(1, 20)
+```
 
-Animate deaths/week vs total deaths. 0:cases, 1:deaths, 2:recovered, 3:active
+Animate total of deaths in the last 7 days vs total deaths. 0:cases, 1:deaths, 2:recovered, 3:active
 ```
 p.animate(1)
 ```

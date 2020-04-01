@@ -31,11 +31,6 @@ for country in c.allCountries:
     color[country] = colors[colorNr]
     markerNr = (markerNr + 1) % len(markers)
     colorNr = (colorNr + 1) % len(colors)
-    # if markerNr == len(markers):
-    #     markerNr = 0
-    # if colorNr == len(colors):
-    #     colorNr = 0
-
 
 def plotGraph(daysBefore=0):
     numOfPlots = len([s for s in skip if not s])
@@ -68,16 +63,16 @@ def plotGraph(daysBefore=0):
         axes.set_ylabel(plotLabel)
 
         # plt.title('Title')
-        # axes.set_xticks(c.xValues)
-        # axes.set_xticklabels(c.xTicks)
-        axes.tick_params(axis='x', which='major')
+        axes.set_xticks(c.xValues)
+        axes.set_xticklabels(c.xTicks, rotation = 90)
+        axes.tick_params(axis='x')
         # plt.xticks(xValues, xTicks,  rotation='vertical')
 
         axes.grid(True)
 
         maxX = len(c.xValues)
         if daysBefore != 0:
-            minX = maxX - daysBefore  # 30 days before
+            minX = maxX - daysBefore  
             axes.set_xlim([minX, maxX])
         if maxY[i] != 0:
             axes.set_ylim([0, maxY[i]])
@@ -103,22 +98,22 @@ def plotGraph(daysBefore=0):
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
 
 
-def scatterGraph(cdra):
+def totalsGraph(cdra, daysBefore=0):
     fig = plt.figure(figsize=(figsizeX, figsizeY))
     ax1 = fig.add_subplot(111)
-    # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
-    xlabel = ['Total cases', 'Total Deaths',
-              'Total recoveries', 'Total active']
+    xlabel = ['Total ' + str(l) for l in c.label]
     daysLabel = ' in last ' + str(timePeriod) + ' days'
-    ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
-              'New recoveries' + daysLabel, 'New active' + daysLabel]
+    ylabel = ['New ' + str(l) + daysLabel for l in c.label]
 
-    lastTime = timePeriod
+    fromValue = 0
+    if daysBefore != 0:
+        fromValue = len(c.xTicks) - timePeriod - daysBefore + 1
+
     for country in c.countries:
         totalNewCasesLastTime = util.runningTotal(
-            util.countryNewCases(country, cdra), lastTime)
-        totalCases = c.yValues[cdra][country][lastTime-1:]
+            util.newCases(c.yValues[cdra][country]), timePeriod)[fromValue:]
+        totalCases = c.yValues[cdra][country][timePeriod-1:][fromValue:]
 
         pairs = [(i, j) for i, j in zip(
             totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
@@ -131,24 +126,36 @@ def scatterGraph(cdra):
         plt.ylabel(ylabel[cdra])
         plt.grid(True)
 
+        plt.xlim(1, 1000000)
+        plt.ylim(1, 10000)
+        if cdra in [0, 2, 3]:
+            plt.ylim(1, 1000000)
+        else:
+            plt.xlim(1, 100000)
+
         ax1.plot(tot, new, color=color[country],
                  marker=marker[country], label=country)
 
-    plt.legend(loc='upper left')
+        if len(tot) > 0:
+            anx = tot[-1]
+            any = new[-1]
+        else:  # outside the visible area
+            anx = 0.1
+            any = 0.1
+
+        annPoint = (anx*1.2, any/1.1)
+        ax1.annotate(country, xy=annPoint, xytext=annPoint)
+    # plt.legend(loc='upper left')
     plt.show()
 
 
 def initAnimatedScatterGraph(cdra, line, annotation):
     fig = plt.figure(figsize=(figsizeX, figsizeY))
-
     ax1 = fig.add_subplot(111)
-    # for country in ['China', 'Italy', 'Spain', 'Greece',  'Germany', 'US', 'UK']:
 
-    xlabel = ['Total cases', 'Total Deaths',
-              'Total recoveries', 'Total active']
+    xlabel = ['Total ' + str(l) for l in c.label]
     daysLabel = ' in last ' + str(timePeriod) + ' days'
-    ylabel = ['New cases' + daysLabel, 'New deaths' + daysLabel,
-              'New recoveries' + daysLabel, 'New active' + daysLabel]
+    ylabel = ['New ' + str(l) + daysLabel for l in c.label]
 
     for country in c.countries:
         new = []
@@ -249,7 +256,7 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
         plt.show()
 
 
-def lastWeekVsTotal(cdra):
+def lastDaysSumVsTotal(cdra):
     past = len(c.xTicks) - timePeriod
 
     fig = plt.figure(figsize=(figsizeX, figsizeY))
@@ -271,4 +278,9 @@ def lastWeekVsTotal(cdra):
     else:
         plt.legend(c.countries, loc='lower left', fontsize='small', ncol=1)
     plt.ylabel('Last '+ str(timePeriod) + ' days ' + c.label[cdra] + ' / Total ' + c.label[cdra])
+
+    ax1.set_xticks(c.xValues)
+    ax1.set_xticklabels(c.xTicks[timePeriod:], rotation = 90)
+    ax1.tick_params(axis='x')
+    ax1.grid(True)
     plt.show()
