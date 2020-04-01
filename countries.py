@@ -4,7 +4,7 @@ import csv
 #
 # allCountries = ['Greece','Italy','UK','Germany','Spain','Turkey','France','Sweden','Netherlands','Austria','Belgium','Portugal','Switzerland']
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Kosovo','Canada']
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada']
 
 countries = allCountries
 
@@ -38,7 +38,6 @@ population['Portugal'] = 11
 population['Switzerland'] = 8.5
 population['Japan'] = 127
 population['South Korea'] = 51
-population['Kosovo'] = 1.8
 population['Canada'] = 37
 
 label = ['Cases', 'Deaths', 'Recovered', 'Active']

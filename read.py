@@ -31,10 +31,14 @@ CLI.add_argument('-a', '--animate', action='store_true',
                  help='animate new numbers/total numbers. Choose which numbers to plot with the --number flag')
 CLI.add_argument('-n', '--number', nargs='?', type=int, default=1,
                  help='number to animate 0:cases, 1:deaths, 2:recovered, 3:active')
+CLI.add_argument('-s', '--savetofile', nargs='?', type=str,
+                 help='file to save the animation')
 CLI.add_argument('-m', '--million', action='store_true',
                  help='in plots divide values by country population in millions')
 CLI.add_argument('--skip', nargs=4, default=[False, False, True, True],
                  help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
+CLI.add_argument('-w', '--week', action='store_true', 
+                 help='Plot last week vs total')
 args = CLI.parse_args()
 
 c.countries = args.country
@@ -44,27 +48,27 @@ p.maxY = args.maxY
 p.skip = args.skip
 p.perMillion = args.million
 p.logY = args.logY
-
-interactiveMode = args.interactive
-daysBefore = int(args.days)
-files = args.files
-printCSV = args.csv
-
+p.savetofile = args.savetofile
 
 #
 # START-UP
 #
-c.readFiles(files)
+c.readFiles(args.files)
 c.checkData()
 
 if args.plot:
-    p.plotGraph(daysBefore)
+    p.plotGraph(int(args.days))
 
 if args.animate:
-    p.animate(args.number, daysBefore)
+    p.animate(args.number, int(args.days))
 
-if printCSV:
+if args.csv:
     c.generateCSV()
 
-if interactiveMode:
+if args.week:
+    p.lastWeekVsTotal(args.number)
+
+if args.interactive:
     code.interact(local=locals())
+
+

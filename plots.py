@@ -5,7 +5,9 @@ from matplotlib.animation import FuncAnimation
 import util
 import countries as c
 
-figsizeX, figsizeY = (15, 10)
+figsizeX, figsizeY = (13, 9)
+
+savetofile = ''
 
 skip = [False, False, False, False]
 logY = False
@@ -63,9 +65,9 @@ def plotGraph(daysBefore=0):
         axes.set_ylabel(plotLabel)
 
         # plt.title('Title')
-        axes.set_xticks(c.xValues)
-        axes.set_xticklabels(c.xTicks)
-        axes.tick_params(axis='x')
+        # axes.set_xticks(c.xValues)
+        # axes.set_xticklabels(c.xTicks)
+        axes.tick_params(axis='x', which='major')
         # plt.xticks(xValues, xTicks,  rotation='vertical')
 
         axes.grid(True)
@@ -168,7 +170,7 @@ def initAnimatedScatterGraph(cdra, line, annotation):
         annotation[country] = ax1.annotate(
             country, xy=(0.1, 0.1), xytext=(0.1, 0.1)
         )
-    plt.legend(loc='upper left')
+    # plt.legend(loc='upper left')
     dateText = ax1.text(1000, 10, '-----', fontsize=36,
                         bbox=dict(facecolor='red', alpha=0.5))
 
@@ -233,11 +235,14 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
                               frames=frames,
                               interval=speed, repeat=repeat, blit=False)
 
-    # animation.save('im.mp4')
-    plt.show()
+    if savetofile:
+        animation.save(savetofile, writer='imagemagick', fps=1)
+        print('Saved animation to file: ', savetofile)
+    else:
+        plt.show()
 
 
-def lastWeekVsTotal():
+def lastWeekVsTotal(cdra):
     past = len(c.xTicks) - timePeriod
 
     fig = plt.figure(figsize=(figsizeX, figsizeY))
@@ -246,7 +251,7 @@ def lastWeekVsTotal():
     for country in c.countries:
         s = [j/i if i > 0 else np.nan for i, j in zip(
             c.yValues[1][country][-past:],
-            util.runningTotal(util.newCases(c.yValues[1][country]), 7)[-past:])]
+            util.runningTotal(util.newCases(c.yValues[cdra][country]), 7)[-past:])]
         plt.plot(s, color=color[country],
                  marker=marker[country])
 
