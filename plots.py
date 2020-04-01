@@ -23,6 +23,8 @@ markers = ['s', 'o', '^', 'v', '<', '>', 'p', '*', 'd']
 markerNr = 0
 colorNr = 0
 
+extraFramesAtTheEnd = 10
+
 for country in c.allCountries:
     marker[country] = markers[markerNr]
     color[country] = colors[colorNr]
@@ -178,13 +180,15 @@ def initAnimatedScatterGraph(cdra, line, annotation):
 
 
 def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
+    if daysBefore == 0:
+        frames = len(c.xTicks) - timePeriod + 1
+    else:
+        frames = daysBefore
+
+    if i >= frames:
+        i = frames - 1
+
     fromValue, toValue = util.getFromTo(len(c.xTicks), timePeriod, daysBefore, i)
-    # if daysBefore == 0:
-    #     fromValue = 0
-    #     toValue = timePeriod + i
-    # else:
-    #     fromValue = len(xTicks) - daysBefore - 1 - timePeriod
-    #     toValue = fromValue + timePeriod + i
 
     date = c.xTicks[toValue-1]
 
@@ -229,6 +233,7 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
     else:
         frames = daysBefore
 
+    frames += extraFramesAtTheEnd
     animation = FuncAnimation(fig, func=animation_frame,
                               fargs=(passlines, cdra, annotation,
                                      dateText, daysBefore),
