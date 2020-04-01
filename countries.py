@@ -3,7 +3,7 @@ import csv
 # Initialize countries
 #
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada']
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada', 'Romania']
 
 countries = allCountries
 
@@ -38,6 +38,7 @@ population['Switzerland'] = 8.5
 population['Japan'] = 127
 population['South Korea'] = 51
 population['Canada'] = 37
+population['Romania'] = 19
 
 label = ['Cases', 'Deaths', 'Recovered', 'Active']
 maxDim = len(label)
