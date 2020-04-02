@@ -82,6 +82,6 @@ def run():
         p.totalsGraph(args.number, int(args.days))
 
     if args.interactive:
-        code.interact(local=locals())
+        code.interact(local=globals())
 
 
