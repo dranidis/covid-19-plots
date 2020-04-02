@@ -44,7 +44,6 @@ def plotGraph(daysBefore=0):
     for i in range(c.maxDim):
         if skip[i]:
             continue
-        # plt.subplot(numOfPlots, 1, plotNr)
 
         if numOfPlots == 1:
             axes = ax
@@ -78,11 +77,7 @@ def plotGraph(daysBefore=0):
             axes.set_ylim([0, maxY[i]])
 
         for country in c.countries:
-            if perMillion:
-                ys = list(
-                    map(lambda y: y/c.population[country], c.yValues[i][country]))
-            else:
-                ys = c.yValues[i][country]
+            ys = [v/div(country) for v in c.yValues[i][country]]
             axes.plot(c.xValues, ys, color=color[country],
                       marker=marker[country])
 
@@ -102,55 +97,18 @@ def div(country):
 
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
 def totalsGraph(cdra, daysBefore=0):
-    fig = plt.figure(figsize=(figsizeX, figsizeY))
-    ax1 = fig.add_subplot(111)
+    line = dict()
+    annotation = dict()
+    fig, line, annotation, dateText = initAnimatedScatterGraph(
+        cdra, line, annotation)
 
-    xlabel = ['Total ' + str(l) for l in c.label]
-    daysLabel = ' in last ' + str(timePeriod) + ' days'
-    ylabel = ['New ' + str(l) + daysLabel for l in c.label]
+    if daysBefore == 0:
+        frames = len(c.xTicks) - timePeriod + 1
+    else:
+        frames = daysBefore
 
-    fromValue = 0
-    if daysBefore != 0:
-        fromValue = len(c.xTicks) - timePeriod - daysBefore + 1
-
-    for country in c.countries:
-        totalNewCasesLastTime = util.runningTotal(
-            util.newCases(c.yValues[cdra][country]), timePeriod)[fromValue:]
-        totalCases = c.yValues[cdra][country][timePeriod-1:][fromValue:]
-
-        pairs = [(i, j) for i, j in zip(
-            totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
-        new = [i/div(country) for i, j in pairs]
-        tot = [j/div(country) for i, j in pairs]
-
-        plt.xscale('log')
-        plt.yscale('log')
-        plt.xlabel(xlabel[cdra])
-        plt.ylabel(ylabel[cdra])
-        plt.grid(True)
-
-        plt.xlim(1, 1000000)
-        plt.ylim(1, 10000)
-        if cdra in [0, 2, 3]:
-            plt.ylim(1, 1000000)
-        else:
-            plt.xlim(1, 100000)
-
-        ax1.plot(tot, new, color=color[country],
-                 marker=marker[country], label=country)
-
-        if len(tot) > 0:
-            anx = tot[-1]
-            any = new[-1]
-        else:  # outside the visible area
-            anx = 0.1
-            any = 0.1
-
-        annPoint = (anx*1.2, any/1.1)
-        ax1.annotate(country, xy=annPoint, xytext=annPoint)
-    # plt.legend(loc='upper left')
+    animation_frame(frames-1, line, cdra, annotation, dateText, daysBefore)
     plt.show()
-
 
 def initAnimatedScatterGraph(cdra, line, annotation):
     fig = plt.figure(figsize=(figsizeX, figsizeY))
