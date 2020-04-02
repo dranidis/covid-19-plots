@@ -10,7 +10,7 @@
 
 Minimum command line options:
 ```
-python read.py <path of csse_covid_19_daily_reports>/*.csv
+python -m covid19plots <path of csse_covid_19_daily_reports>/*.csv
 ```
 Will parse all files but will not do anything else.
 
@@ -22,35 +22,41 @@ All examples below assume that the data repository COVID-19 is located in the pa
 
 Plot all countries cases and deaths
 ```
-python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -p
+python -m covid19plots ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -p
 ```
 ![](figs/figure_1.png)
 
 
 Plot last week's death per total deaths for specific countries
 ```
-python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -w -c Greece Italy Spain UK US
+python -m covid19plots ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -w -c Greece Italy Spain UK US
 ```
 ![](figs/figure_2.png)
 
 Animate deaths per week vs total deaths for all countries, for the last 30 days
 ```
-python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -d 30 -c Greece Italy Spain UK US
+python -m covid19plots ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -d 30 -c Greece Italy Spain UK US
 ```
 Save a gif animation
 ```
-python read.py ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -s anim.gif
+python -m covid19plots ../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/*.csv -a -s anim.gif
 ```
 
 ![](figs/anim.gif)
 
 ## Help
 ```
-python read.py -h
+python -m covid19plots -h
 ```
 
 Output:
 ```
+usage: __main__.py [-h] [-c [COUNTRY [COUNTRY ...]]] [-p] [-t] [-a] [-w]
+                   [-d [DAYS]] [--maxY MAXY MAXY MAXY MAXY] [-l] [-i] [--csv]
+                   [-n [NUMBER]] [-s [SAVETOFILE]] [-m]
+                   [--draw DRAW DRAW DRAW DRAW] [-r [RUNNINGTOTAL]]
+                   files [files ...]
+
 Plot graphs for the COVID-19
 
 positional arguments:
@@ -62,7 +68,7 @@ optional arguments:
                         countries to present in plots
   -p, --plot            time plots of cases/deaths/recoveries/active. Choose
                         plots to skip with the --skip flag
-  -t, --totalNumbers    new n numbers in last d days/total numbers. Choose
+  -t, --totalsGraph     new n numbers in last d days/total numbers. Choose
                         which numbers to plot with the --number flag and how
                         many days with the -d flag.
   -a, --animate         animate new numbers/total numbers. Choose which
@@ -85,12 +91,13 @@ optional arguments:
                         file to save the animation
   -m, --million         in plots divide values by country population in
                         millions
-  --skip SKIP SKIP SKIP SKIP
+  --draw DRAW DRAW DRAW DRAW
                         boolean (True|False) whether the specific time plot
                         will be drawn. Plots: Cases, Deaths, Recovered, Active
   -r [RUNNINGTOTAL], --runningTotal [RUNNINGTOTAL]
                         number of days to calculate running totals (in
                         animation/last days sum vs total)
+
 
 
 ```
