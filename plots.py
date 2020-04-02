@@ -41,10 +41,7 @@ def plotGraph(daysBefore=0):
     fig, ax = plt.subplots(numOfPlots, 1, figsize=(figsizeX, figsizeY))
 
     plotNr = 0
-    for i in range(c.maxDim):
-        if skip[i]:
-            continue
-
+    for i in [i for s,i in zip(skip, range(c.maxDim)) if not s]:
         if numOfPlots == 1:
             axes = ax
         else:

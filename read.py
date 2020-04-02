@@ -43,7 +43,7 @@ CLI.add_argument('-s', '--savetofile', nargs='?', type=str,
                  help='file to save the animation')
 CLI.add_argument('-m', '--million', action='store_true',
                  help='in plots divide values by country population in millions')
-CLI.add_argument('--skip', nargs=4, default=[False, False, True, True],
+CLI.add_argument('--draw', nargs=4, default=['1','1','0','0'],
                  help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
 CLI.add_argument('-r', '--runningTotal', nargs='?', type=int, default=7,
                  help='number of days to calculate running totals (in animation/last days sum vs total)')          
@@ -53,7 +53,7 @@ c.countries = args.country
 c.countries.sort()
 
 p.maxY = args.maxY
-p.skip = args.skip
+p.skip = [not ts.lower() in ['true', 't', '1']  for ts in args.draw]
 p.perMillion = args.million
 p.logY = args.logY
 p.savetofile = args.savetofile
