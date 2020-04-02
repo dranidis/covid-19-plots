@@ -95,9 +95,12 @@ def plotGraph(daysBefore=0):
 
     plt.show()
 
+def div(country):
+    if perMillion:
+        return c.population[country]
+    return 1
+
 # cdra = 1 # cases:0 , deaths:1, rec: 2, act: 3
-
-
 def totalsGraph(cdra, daysBefore=0):
     fig = plt.figure(figsize=(figsizeX, figsizeY))
     ax1 = fig.add_subplot(111)
@@ -117,8 +120,8 @@ def totalsGraph(cdra, daysBefore=0):
 
         pairs = [(i, j) for i, j in zip(
             totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
-        new = [i for i, j in pairs]
-        tot = [j for i, j in pairs]
+        new = [i/div(country) for i, j in pairs]
+        tot = [j/div(country) for i, j in pairs]
 
         plt.xscale('log')
         plt.yscale('log')
@@ -212,8 +215,8 @@ def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
 
         pairs = [(i, j) for i, j in zip(
             totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
-        new = [i for i, j in pairs]
-        tot = [j for i, j in pairs]
+        new = [i/div(country) for i, j in pairs]
+        tot = [j/div(country) for i, j in pairs]
 
         line[country].set_xdata(tot)
         line[country].set_ydata(new)

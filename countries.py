@@ -3,7 +3,7 @@ import csv
 # Initialize countries
 #
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada', 'Romania']
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada', 'Romania', 'Hubei']
 
 countries = allCountries
 
@@ -39,6 +39,7 @@ population['Japan'] = 127
 population['South Korea'] = 51
 population['Canada'] = 37
 population['Romania'] = 19
+population['Hubei'] = 58.5
 
 label = ['Cases', 'Deaths', 'Recovered', 'Active']
 maxDim = len(label)
@@ -132,6 +133,11 @@ def readFiles(files):
 
                 if country in countries:
                     processRow(country, row[confirmedIndex],
+                               row[deathsIndex], row[recoveredIndex])
+
+                # extra call for 'Hubei'
+                if 'Hubei' in countries and row[provinceIndex] == 'Hubei':
+                    processRow('Hubei', row[confirmedIndex],
                                row[deathsIndex], row[recoveredIndex])
 
             for country in countries:
