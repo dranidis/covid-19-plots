@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-import util
-import countries as c
+from covid19plots import util
+from covid19plots import countries as c
 
 figsizeX, figsizeY = (13, 9)
 

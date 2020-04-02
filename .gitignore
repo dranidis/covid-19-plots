@@ -6,6 +6,7 @@ __pycache__/
 .vscode/
 
 # MORE
+tmp/
 *.csv
 .~lock.*
 scratchpad.py

@@ -1,5 +1,5 @@
 import unittest
-import util
+from covid19plots import util
 
 def fun(x):
     return x + 2
