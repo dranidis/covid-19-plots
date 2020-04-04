@@ -51,7 +51,7 @@ python -m covid19plots -h
 
 Output:
 ```
-usage: __main__.py [-h] [-c [COUNTRY [COUNTRY ...]]] [-p] [-t] [-a] [-w]
+usage: __main__.py [-h] [-c [COUNTRY [COUNTRY ...]]] [-p] [-t] [-a] [-w] [-x]
                    [-d [DAYS]] [--maxY MAXY MAXY MAXY MAXY] [-l] [-i] [--csv]
                    [-n [NUMBER]] [-s [SAVETOFILE]] [-m]
                    [--draw DRAW DRAW DRAW DRAW] [-r [RUNNINGTOTAL]]
@@ -66,15 +66,6 @@ optional arguments:
   -h, --help            show this help message and exit
   -c [COUNTRY [COUNTRY ...]], --country [COUNTRY [COUNTRY ...]]
                         countries to present in plots
-  -p, --plot            time plots of cases/deaths/recoveries/active. Choose
-                        plots to skip with the --skip flag
-  -t, --totalsGraph     new n numbers in last d days/total numbers. Choose
-                        which numbers to plot with the --number flag and how
-                        many days with the -d flag.
-  -a, --animate         animate new numbers/total numbers. Choose which
-                        numbers to plot with the --number flag
-  -w, --week            Plot last days sum vs total. Although the flag is
-                        named week any number of days can be set with -r
   -d [DAYS], --days [DAYS]
                         number of days to plot before today. By default plots
                         start from the beginning of data collection.
@@ -97,6 +88,19 @@ optional arguments:
   -r [RUNNINGTOTAL], --runningTotal [RUNNINGTOTAL]
                         number of days to calculate running totals (in
                         animation/last days sum vs total)
+
+plots:
+  -p, --plot            time plots of cases/deaths/recoveries/active. Choose
+                        plots to skip with the --skip flag
+  -t, --totalsGraph     new n numbers in last d days/total numbers. Choose
+                        which numbers to plot with the --number flag and how
+                        many days with the -d flag.
+  -a, --animate         animate new numbers/total numbers. Choose which
+                        numbers to plot with the --number flag
+  -w, --week            Plot last days sum vs total. Although the flag is
+                        named week any number of days can be set with -r
+  -x, --rateOfChange    Plot last days sum vs number of days. Any number of
+                        days can be set with -r
 
 
 

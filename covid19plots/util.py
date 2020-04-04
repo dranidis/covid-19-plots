@@ -1,3 +1,5 @@
+import numpy as np
+
 def runningTotal(cases, days):
     total = []
     numbers = len(cases) - days + 1
@@ -25,3 +27,20 @@ def getFromTo(length, timePeriod, daysBefore, frameNr):
         toValue = fromValue + timePeriod + frameNr
 
     return fromValue, toValue    
+
+# running total that preserves the lenght of the argument list
+def runningTotalN(cases, days):
+    total = []
+    numbers = len(cases) - days + 1
+    for d in range(len(cases) -numbers):
+        total.append(np.nan)
+    for d in range(numbers):
+        t = 0
+        for i in range(days):
+            t += cases[d + i]
+        total.append(t)
+    return total
+
+def runningAvgN(cases, days):
+    return [v/days for v in runningTotalN(cases, days)]
+

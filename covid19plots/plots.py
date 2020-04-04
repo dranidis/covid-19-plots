@@ -32,7 +32,60 @@ for country in c.allCountries:
     markerNr = (markerNr + 1) % len(markers)
     colorNr = (colorNr + 1) % len(colors)
 
+def getXValues():
+    return c.xValues
+
+#
+# Plots to draw
+#
 def plotGraph(daysBefore=0):
+    plotGraphFunc(getXValues, getYValues, getYLabel, daysBefore)
+
+def lastDaysSumVsDays(daysBefore=0):
+    plotGraphFunc(getXValues, getYAvgNew, getYLabelAvgNew, daysBefore)
+
+def lastDaysSumVsTotal(daysBefore=0):
+    plotGraphFunc(getXValues, getY, getYLabelW, daysBefore)
+
+#
+# Data functions for Y axis
+#
+def getYValues(i, country):
+    return [v/div(country) if v > 0 else np.nan for v in c.yValues[i][country]]    
+
+def getYAvgNew(i, country):
+    return [v/div(country) if v > 0 else np.nan for v in util.runningAvgN(util.newCases(
+                c.yValues[i][country]), timePeriod)]
+
+def getY(i, country):
+    return [j/i if i > 0 else np.nan for i, j in zip(
+            c.yValues[i][country],
+            util.runningTotalN(util.newCases(c.yValues[i][country]), timePeriod))]
+
+#
+# Labelling functions for Y axis
+#
+def getYLabel(i):
+    plotLabel = c.label[i]
+    if perMillion:
+        plotLabel += ' per million'
+    return plotLabel
+
+def getYLabelAvgNew(i):
+    plotLabel = 'Last '+ str(timePeriod) + ' days ' + c.label[i]
+    if perMillion:
+        plotLabel += ' per million'    
+    return plotLabel + ' / ' + str(timePeriod) + ' days '
+
+def getYLabelW(i):
+    plotLabel = 'Last '+ str(timePeriod) + ' days ' + c.label[i] + ' / Total ' + c.label[i]
+    return plotLabel
+
+#
+# General function for time-plots
+#
+def plotGraphFunc(getXValues, getYValues, getYLabel, daysBefore):
+
     numOfPlots = len([s for s in skip if not s])
     if numOfPlots == 0:
         print('No plots to draw.')
@@ -51,18 +104,14 @@ def plotGraph(daysBefore=0):
             axes.set_yscale('log')
 
         axes.set_xlabel('Date')
-        plotLabel = c.label[i]
-
-        if perMillion:
-            plotLabel += ' per million'
+        
+        plotLabel = getYLabel(i)
 
         axes.set_ylabel(plotLabel)
 
-        # plt.title('Title')
         axes.set_xticks(c.xValues)
         axes.set_xticklabels(c.xTicks, rotation = 90)
         axes.tick_params(axis='x')
-        # plt.xticks(xValues, xTicks,  rotation='vertical')
 
         axes.grid(True)
 
@@ -74,17 +123,17 @@ def plotGraph(daysBefore=0):
             axes.set_ylim([0, maxY[i]])
 
         for country in c.countries:
-            ys = [v/div(country) for v in c.yValues[i][country]]
-            axes.plot(c.xValues, ys, color=color[country],
+            xs = getXValues()
+            ys = getYValues(i, country)
+            axes.plot(xs, ys, color=color[country],
                       marker=marker[country])
+            annotation = axes.annotate(
+                country, xy=(xs[-1], ys[-1]), xytext=(xs[-1]+0.1, ys[-1])
+            )
 
         plotNr += 1
 
-    if len(c.countries) > 5:
-        plt.legend(c.countries, loc='upper left', fontsize='xx-small', ncol=2)
-    else:
-        plt.legend(c.countries, loc='upper left', fontsize='small', ncol=1)
-
+    addLegends()
     plt.show()
 
 def div(country):
@@ -112,8 +161,8 @@ def initAnimatedScatterGraph(cdra, line, annotation):
     ax1 = fig.add_subplot(111)
 
     xlabel = ['Total ' + str(l) for l in c.label]
-    daysLabel = ' in last ' + str(timePeriod) + ' days'
-    ylabel = ['New ' + str(l) + daysLabel for l in c.label]
+    daysLabel = ' per day (in last ' + str(timePeriod) + ' days)'
+    ylabel = ['Average ' + str(l) + daysLabel for l in c.label]
 
     for country in c.countries:
         new = []
@@ -168,7 +217,7 @@ def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
             util.newCases(partialYValues), timePeriod)[fromValue:]
         totalCases = partialYValues[timePeriod-1:][fromValue:]
 
-        pairs = [(i, j) for i, j in zip(
+        pairs = [(i/timePeriod, j) for i, j in zip(
             totalNewCasesLastTime, totalCases) if i > 0 and j > 0]
         new = [i/div(country) for i, j in pairs]
         tot = [j/div(country) for i, j in pairs]
@@ -186,7 +235,6 @@ def animation_frame(i, line, cdra, annotation, dateText, daysBefore):
         annotation[country].xy = (anx, any)
 
     return line, annotation, dateText,
-
 
 def animate(cdra, daysBefore=0, speed=500, repeat=False):
     line = dict()
@@ -214,31 +262,8 @@ def animate(cdra, daysBefore=0, speed=500, repeat=False):
         plt.show()
 
 
-def lastDaysSumVsTotal(cdra):
-    past = len(c.xTicks) - timePeriod
-
-    fig = plt.figure(figsize=(figsizeX, figsizeY))
-    ax1 = fig.add_subplot(111)
-
-    for country in c.countries:
-        s = [j/i if i > 0 else np.nan for i, j in zip(
-            c.yValues[cdra][country][-past:],
-            util.runningTotal(util.newCases(c.yValues[cdra][country]), timePeriod)[-past:])]
-        plt.plot(s, color=color[country],
-                 marker=marker[country])
-
-        annotation = ax1.annotate(
-            country, xy=(len(s), s[-1]), xytext=(len(s), s[-1])
-        )
-
+def addLegends():
     if len(c.countries) > 5:
-        plt.legend(c.countries, loc='lower left', fontsize='xx-small', ncol=2)
+        plt.legend(c.countries, loc='upper left', fontsize='xx-small', ncol=2)
     else:
-        plt.legend(c.countries, loc='lower left', fontsize='small', ncol=1)
-    plt.ylabel('Last '+ str(timePeriod) + ' days ' + c.label[cdra] + ' / Total ' + c.label[cdra])
-
-    ax1.set_xticks(c.xValues)
-    ax1.set_xticklabels(c.xTicks[timePeriod:], rotation = 90)
-    ax1.tick_params(axis='x')
-    ax1.grid(True)
-    plt.show()
+        plt.legend(c.countries, loc='upper left', ncol=1)    

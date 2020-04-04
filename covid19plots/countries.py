@@ -3,7 +3,7 @@ import csv
 # Initialize countries
 #
 allCountries = ['US', 'Switzerland', 'Ireland', 'Denmark', 'Norway', 'Iran', 'China', 'Greece', 'Italy', 'UK', 'Germany',
-                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada', 'Romania', 'Hubei']
+                'Spain', 'Turkey', 'France', 'Sweden', 'Netherlands', 'Austria', 'Belgium', 'Portugal',  'Japan', 'South Korea', 'Canada', 'Romania']
 
 countries = allCountries
 
@@ -15,31 +15,34 @@ casesReported = dict()
 deathsReported = dict()
 recoveredReported = dict()
 
-population = dict()
-population['US'] = 372
-population['Ireland'] = 5
-population['Denmark'] = 6
-population['Norway'] = 5
-population['China'] = 1340
-population['Iran'] = 81
-population['Greece'] = 11
-population['Italy'] = 61
-population['UK'] = 66
-population['Germany'] = 83
-population['Spain'] = 46
-population['Turkey'] = 80
-population['France'] = 67
-population['Sweden'] = 10
-population['Netherlands'] = 17
-population['Austria'] = 9
-population['Belgium'] = 11
-population['Portugal'] = 11
-population['Switzerland'] = 8.5
-population['Japan'] = 127
-population['South Korea'] = 51
-population['Canada'] = 37
-population['Romania'] = 19
-population['Hubei'] = 58.5
+# population = dict()
+# population['US'] = 372
+# population['Ireland'] = 5
+# population['Denmark'] = 6
+# population['Norway'] = 5
+# population['China'] = 1340
+# population['Iran'] = 81
+# population['Greece'] = 11
+# population['Italy'] = 61
+# population['UK'] = 66
+# population['Germany'] = 83
+# population['Spain'] = 46
+# population['Turkey'] = 80
+# population['France'] = 67
+# population['Sweden'] = 10
+# population['Netherlands'] = 17
+# population['Austria'] = 9
+# population['Belgium'] = 11
+# population['Portugal'] = 11
+# population['Switzerland'] = 8.5
+# population['Japan'] = 127
+# population['South Korea'] = 51
+# population['Canada'] = 37
+# population['Romania'] = 19
+# population['Hubei'] = 58.5
+
+population = {'Portugal': 10374.822, 'Japan': 126960.0, 'Denmark': 5717.014, 'Belgium': 11319.511, 'UK': 65110.0, 'Greece': 10858.018, 'Ireland': 6378.0, 'China': 1377422.166, 'Iran': 79369.9, 'Italy': 60665.551, 'Romania': 19861.408,
+              'US': 323947.0, 'Canada': 36155.487, 'Netherlands': 17019.8, 'Spain': 46438.422, 'Switzerland': 8341.6, 'Germany': 81770.9, 'Turkey': 78741.053, 'Sweden': 9894.888, 'South Korea': 25281.0, 'France': 66710.0, 'Norway': 5223.256, 'Austria': 8725.931}
 
 label = ['Cases', 'Deaths', 'Recovered', 'Active']
 maxDim = len(label)
@@ -77,7 +80,6 @@ def processCountry(country):
             yValues[i][country].append(lastValue)
         else:
             yValues[i][country].append(0)
-
 
 
 def readFiles(files):
@@ -126,7 +128,7 @@ def readFiles(files):
                 if row[countryIndex] == 'United Kingdom':
                     row[countryIndex] = 'UK'
 
-                if row[provinceIndex] == '' or row[countryIndex] in ['US','Canada','China']:
+                if row[provinceIndex] == '' or row[countryIndex] in ['US', 'Canada', 'China']:
                     country = row[countryIndex]
                 else:
                     country = row[provinceIndex]
@@ -167,6 +169,7 @@ def processRow(country, cases, deaths, recovered):
 
     countryReported[country] = True
 
+
 def generateCSV():
     index = 0
     for date in xTicks:
@@ -177,6 +180,7 @@ def generateCSV():
                 print(yValues[i][country][index], end=',')
         print()
         index += 1
+
 
 def checkData():
     print("Fixing inconsistent data for cases and deaths")
@@ -205,4 +209,4 @@ def checkData():
                         yValues[i][country][index-1] = 10
                 previous = current
                 index += 1
-
+    print("\n>>>\n", flush=True)

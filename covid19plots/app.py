@@ -4,6 +4,7 @@ import code
 
 from covid19plots import plots as p
 from covid19plots import countries as c
+# from covid19plots import scratchpad as s
 
 def run():
     #
@@ -18,14 +19,17 @@ def run():
     CLI.add_argument('files', nargs='+', type=str,
                     help='csv files to read from')
 
-    CLI.add_argument('-p', '--plot', action='store_true',
+    plotsCLI = CLI.add_argument_group('plots')
+    plotsCLI.add_argument('-p', '--plot', action='store_true',
                     help='time plots of cases/deaths/recoveries/active. Choose plots to skip with the --skip flag')
-    CLI.add_argument('-t', '--totalsGraph', action='store_true',
+    plotsCLI.add_argument('-t', '--totalsGraph', action='store_true',
                     help='new n numbers in last d days/total numbers. Choose which numbers to plot with the --number flag and how many days with the -d flag.')
-    CLI.add_argument('-a', '--animate', action='store_true',
+    plotsCLI.add_argument('-a', '--animate', action='store_true',
                     help='animate new numbers/total numbers. Choose which numbers to plot with the --number flag')
-    CLI.add_argument('-w', '--week', action='store_true', 
+    plotsCLI.add_argument('-w', '--week', action='store_true', 
                     help='Plot last days sum vs total. Although the flag is named week any number of days can be set with -r')
+    plotsCLI.add_argument('-x', '--rateOfChange', action='store_true', 
+                    help='Plot last days sum vs number of days. Any number of days can be set with -r')
 
     CLI.add_argument('-d', '--days', nargs='?', type=int, default=0,
                     help='number of days to plot before today. By default plots start from the beginning of data collection.')
@@ -66,6 +70,8 @@ def run():
     c.readFiles(args.files)
     c.checkData()
 
+    # s.recentData()
+
     if args.plot:
         p.plotGraph(int(args.days))
 
@@ -76,10 +82,13 @@ def run():
         c.generateCSV()
 
     if args.week:
-        p.lastDaysSumVsTotal(args.number)
+        p.lastDaysSumVsTotal(int(args.days))
 
     if args.totalsGraph:
         p.totalsGraph(args.number, int(args.days))
+
+    if args.rateOfChange:
+        p.lastDaysSumVsDays(int(args.days))
 
     if args.interactive:
         code.interact(local=globals())
