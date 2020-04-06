@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 
 # Initialize countries
 #
@@ -41,8 +42,7 @@ recoveredReported = dict()
 # population['Romania'] = 19
 # population['Hubei'] = 58.5
 
-population = {'Portugal': 10374.822, 'Japan': 126960.0, 'Denmark': 5717.014, 'Belgium': 11319.511, 'UK': 65110.0, 'Greece': 10858.018, 'Ireland': 6378.0, 'China': 1377422.166, 'Iran': 79369.9, 'Italy': 60665.551, 'Romania': 19861.408,
-              'US': 323947.0, 'Canada': 36155.487, 'Netherlands': 17019.8, 'Spain': 46438.422, 'Switzerland': 8341.6, 'Germany': 81770.9, 'Turkey': 78741.053, 'Sweden': 9894.888, 'South Korea': 25281.0, 'France': 66710.0, 'Norway': 5223.256, 'Austria': 8725.931}
+population = {'Portugal': 10.374822, 'Ireland': 6.378, 'Austria': 8.725931, 'Denmark': 5.717014, 'Germany': 81.7709, 'Iran': 79.3699, 'Spain': 46.438422, 'South Korea': 25.281, 'UK': 65.11, 'Canada': 36.155487, 'Turkey': 78.741053, 'Japan': 126.96, 'Netherlands': 17.0198, 'Greece': 10.858018, 'Sweden': 9.894888, 'Norway': 5.223256, 'Romania': 19.861408, 'Belgium': 11.319511, 'Italy': 60.665551, 'France': 66.71, 'Switzerland': 8.3416, 'China': 1377.422166, 'US': 323.947}
 
 label = ['Cases', 'Deaths', 'Recovered', 'Active']
 maxDim = len(label)
@@ -144,6 +144,61 @@ def readFiles(files):
 
             for country in countries:
                 processCountry(country)
+
+
+def readUpdateFile():
+    filename = 'update.csv'
+    print('Reading', filename, 'for recent data')
+    updated = dict()
+    with open(filename) as csvfile:
+        spamreader = csv.reader(csvfile)
+        xValues.append(xValues[-1] + 1)
+        xTicks.append('new')
+
+        header = False
+        for row in spamreader:
+            if header:
+                header = False
+                continue
+            country = row[0]
+            totalCases = row[1]
+            totalDeaths = row[3]
+            totalRec = row[5]
+
+            if totalDeaths != '':
+                totalDeaths = int(totalDeaths)
+            else:
+                totalDeaths = np.nan
+            if totalCases != '':
+                totalCases = int(totalCases)
+            else:
+                totalCases = np.nan
+            if totalRec != '':
+                totalRec = int(totalRec)
+            else:
+                totalRec = np.nan
+
+            if country == 'USA':
+                country = 'US'
+            if country == 'S. Korea':
+                country = 'South Korea'
+
+            updated[country] = (totalCases, totalDeaths, totalRec, totalCases - totalDeaths - totalRec)
+
+        countries = []
+        for country in allCountries:
+            if country in updated.keys():
+                print('Updating ', country)
+                (tc, td, tr, ta) = updated[country]
+                print(tc, td, tr, ta)
+                yValues[0][country].append(tc)
+                yValues[1][country].append(td)
+                yValues[2][country].append(tr)
+                yValues[3][country].append(ta)
+                countries.append(country)
+            else:
+                print('Not updated:', country)
+    print("\n>>>\n", flush=True)
 
 
 def processRow(country, cases, deaths, recovered):

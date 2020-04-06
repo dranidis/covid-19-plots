@@ -34,7 +34,9 @@ def run():
     CLI.add_argument('-d', '--days', nargs='?', type=int, default=0,
                     help='number of days to plot before today. By default plots start from the beginning of data collection.')
     CLI.add_argument('--maxY', nargs=4, type=int, default=[0, 0, 0, 0],
-                    help='y axes limits for time plots')
+                    help='y max axes limits for time plots')
+    CLI.add_argument('--minY', nargs=4, type=int, default=[0, 0, 0, 0],
+                    help='y min axes limits for time plots')
     CLI.add_argument('-l', '--logY', action='store_true',
                     help='use log scale for the Y axes of time plots')
     CLI.add_argument('-i', '--interactive', action='store_true',
@@ -52,25 +54,36 @@ def run():
                     help='boolean (True|False) whether the specific time plot will be drawn. Plots: Cases, Deaths, Recovered, Active')
     CLI.add_argument('-r', '--runningTotal', nargs='?', type=int, default=7,
                     help='number of days to calculate running totals (in animation/last days sum vs total)')          
+
+    CLI.add_argument('-u', '--update', action='store_true',
+                    help='reads an update.csv file with new entries (internal use)')
+
     args = CLI.parse_args()
 
-    c.countries = args.country
-    c.countries.sort()
 
-    p.maxY = args.maxY
-    p.skip = [not ts.lower() in ['true', 't', '1']  for ts in args.draw]
-    p.perMillion = args.million
-    p.logY = args.logY
-    p.savetofile = args.savetofile
-    p.timePeriod = int(args.runningTotal)
-
-    #
+#
     # START-UP
     #
     c.readFiles(args.files)
     c.checkData()
 
+    if args.update:
+        c.readUpdateFile()
+
     # s.recentData()
+
+    # process console args
+    c.countries = args.country
+    c.countries.sort()
+
+    p.maxY = args.maxY
+    p.minY = args.minY
+    p.skip = [not ts.lower() in ['true', 't', '1']  for ts in args.draw]
+    p.perMillion = args.million
+    p.logY = args.logY
+    p.savetofile = args.savetofile
+    p.timePeriod = int(args.runningTotal)
+  
 
     if args.plot:
         p.plotGraph(int(args.days))

@@ -13,6 +13,7 @@ skip = [False, False, False, False]
 logY = False
 perMillion = False
 maxY = [0, 0, 0, 0]
+minY = [0, 0, 0, 0]
 timePeriod = 7
 
 color = dict()
@@ -119,8 +120,15 @@ def plotGraphFunc(getXValues, getYValues, getYLabel, daysBefore):
         if daysBefore != 0:
             minX = maxX - daysBefore  
             axes.set_xlim([minX, maxX])
+
+        bl, tl = axes.get_ylim()
+        print('Limits', bl, tl)
         if maxY[i] != 0:
-            axes.set_ylim([0, maxY[i]])
+            bl, tl = axes.set_ylim(0, maxY[i])
+            print('Limits', bl, tl)
+        # if minY[i] != 0:
+        #     bl, tl = axes.set_ylim(minY[i], tl)
+        #     print('Limits', bl, tl)
 
         for country in c.countries:
             xs = getXValues()
